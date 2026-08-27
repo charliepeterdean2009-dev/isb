@@ -1,0 +1,503 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Statistical Analysis of Regional Heat Illness Trends in South Korea (2025–2026)</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Chart.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            50: '#f0f7ff',
+                            100: '#e0effe',
+                            500: '#2563eb',
+                            600: '#1d4ed8',
+                            700: '#1e40af',
+                            900: '#1e3a8a',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8fafc;
+            color: #0f172a;
+        }
+        .custom-scrollbar::-webkit-scrollbar {
+            height: 6px;
+            width: 6px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: #f1f5f9;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 4px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+    </style>
+</head>
+<body class="min-h-screen pb-16">
+
+    <!-- Header / Navigation -->
+    <header class="bg-slate-900 text-white border-b border-slate-800 sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-5 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+            <div>
+                <div class="flex items-center gap-2">
+                    <span class="inline-block p-2 bg-red-500/10 text-red-400 rounded-lg border border-red-500/20">
+                        <i data-lucide="activity" class="w-5 h-5"></i>
+                    </span>
+                    <h1 class="text-xl sm:text-2xl font-bold tracking-tight">South Korea Heat Illness Surveillance Report</h1>
+                </div>
+                <p class="text-sm text-slate-400 mt-1">Regional Trend & Epidemiological Mortality Analysis (2025–2026)</p>
+            </div>
+            <div class="flex items-center gap-3">
+                <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold bg-slate-800 text-slate-300 border border-slate-700">
+                    <i data-lucide="calendar" class="w-3.5 h-3.5 text-slate-400"></i>
+                    2025 – 2026 Comparative Data
+                </span>
+                <button onclick="window.print()" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-brand-600 hover:bg-brand-500 text-white transition-colors shadow-sm">
+                    <i data-lucide="printer" class="w-3.5 h-3.5"></i>
+                    Export / Print
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-8 space-y-8">
+
+        <!-- Executive KPI Cards -->
+        <section class="grid grid-cols-1 md:grid-cols-3 gap-5">
+            <!-- Patient Volume KPI -->
+            <div class="bg-white rounded-2xl p-6 border border-slate-200/80 shadow-sm relative overflow-hidden">
+                <div class="flex justify-between items-start">
+                    <div>
+                        <p class="text-xs font-bold uppercase tracking-wider text-slate-500">Total Patient Volume</p>
+                        <h3 class="text-3xl font-extrabold text-slate-900 mt-2">3,576</h3>
+                        <p class="text-xs text-slate-500 mt-1">2025 Baseline: <span class="font-medium">3,885</span></p>
+                    </div>
+                    <div class="p-3 bg-emerald-50 text-emerald-600 rounded-xl border border-emerald-100">
+                        <i data-lucide="users" class="w-6 h-6"></i>
+                    </div>
+                </div>
+                <div class="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-sm">
+                    <span class="inline-flex items-center gap-1 font-semibold text-emerald-600 bg-emerald-50 px-2.5 py-0.5 rounded-full text-xs">
+                        <i data-lucide="trending-down" class="w-3.5 h-3.5"></i> -7.95% (-309)
+                    </span>
+                    <span class="text-xs text-slate-400 font-medium">Contraction in Morbidity</span>
+                </div>
+            </div>
+
+            <!-- Fatality KPI -->
+            <div class="bg-white rounded-2xl p-6 border border-slate-200/80 shadow-sm relative overflow-hidden">
+                <div class="flex justify-between items-start">
+                    <div>
+                        <p class="text-xs font-bold uppercase tracking-wider text-slate-500">National Fatality Count</p>
+                        <h3 class="text-3xl font-extrabold text-slate-900 mt-2">32</h3>
+                        <p class="text-xs text-slate-500 mt-1">2025 Baseline: <span class="font-medium">24</span></p>
+                    </div>
+                    <div class="p-3 bg-red-50 text-red-600 rounded-xl border border-red-100">
+                        <i data-lucide="alert-triangle" class="w-6 h-6"></i>
+                    </div>
+                </div>
+                <div class="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-sm">
+                    <span class="inline-flex items-center gap-1 font-semibold text-red-600 bg-red-50 px-2.5 py-0.5 rounded-full text-xs">
+                        <i data-lucide="trending-up" class="w-3.5 h-3.5"></i> +33.3% (+8)
+                    </span>
+                    <span class="text-xs text-slate-400 font-medium">Increased Clinical Severity</span>
+                </div>
+            </div>
+
+            <!-- Case Fatality Rate KPI -->
+            <div class="bg-white rounded-2xl p-6 border border-slate-200/80 shadow-sm relative overflow-hidden">
+                <div class="flex justify-between items-start">
+                    <div>
+                        <p class="text-xs font-bold uppercase tracking-wider text-slate-500">Case Fatality Rate (CFR)</p>
+                        <h3 class="text-3xl font-extrabold text-slate-900 mt-2">0.89%</h3>
+                        <p class="text-xs text-slate-500 mt-1">2025 Baseline: <span class="font-medium">0.62%</span></p>
+                    </div>
+                    <div class="p-3 bg-amber-50 text-amber-600 rounded-xl border border-amber-100">
+                        <i data-lucide="percent" class="w-6 h-6"></i>
+                    </div>
+                </div>
+                <div class="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-sm">
+                    <span class="inline-flex items-center gap-1 font-semibold text-amber-700 bg-amber-50 px-2.5 py-0.5 rounded-full text-xs">
+                        <i data-lucide="trending-up" class="w-3.5 h-3.5"></i> +0.27% Lethality
+                    </span>
+                    <span class="text-xs text-slate-400 font-medium">Inverse Volatility Shift</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- Main Narrative & Analytics Section -->
+        <section class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <!-- Left Narrative Column (2 Cols wide on Desktop) -->
+            <div class="lg:col-span-2 space-y-8">
+
+                <!-- National Trend Card -->
+                <div class="bg-white rounded-2xl p-6 sm:p-8 border border-slate-200/80 shadow-sm space-y-4">
+                    <div class="flex items-center gap-3 border-b border-slate-100 pb-4">
+                        <div class="p-2 bg-brand-50 text-brand-600 rounded-lg">
+                            <i data-lucide="file-text" class="w-5 h-5"></i>
+                        </div>
+                        <h2 class="text-xl font-bold text-slate-900">National Trend Analysis: Total Incidence vs. Fatality Rates</h2>
+                    </div>
+                    
+                    <p class="text-slate-600 text-sm leading-relaxed">
+                        A comparative longitudinal analysis of national heat illness data between 2025 and 2026 reveals a concerning asynchronous trend between morbidity and mortality. While total patient volume decreased by approximately <strong>7.9%</strong> (from 3,885 to 3,576), the national fatality count rose by <strong>33.3%</strong> (from 24 to 32). This statistical divergence indicates that while the absolute reach of heat-related events may have contracted, the clinical severity of cases intensified significantly.
+                    </p>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 py-2">
+                        <div class="bg-slate-50 p-4 rounded-xl border border-slate-100">
+                            <span class="text-xs text-slate-500 font-semibold uppercase">2025 Patient vs Death Summary</span>
+                            <div class="flex justify-between items-baseline mt-2">
+                                <span class="text-lg font-bold text-slate-800">3,885 <span class="text-xs text-slate-500 font-normal">Patients</span></span>
+                                <span class="text-sm font-semibold text-slate-600">24 <span class="text-xs text-slate-500 font-normal">Deaths</span></span>
+                            </div>
+                        </div>
+                        <div class="bg-slate-50 p-4 rounded-xl border border-slate-100">
+                            <span class="text-xs text-slate-500 font-semibold uppercase">2026 Patient vs Death Summary</span>
+                            <div class="flex justify-between items-baseline mt-2">
+                                <span class="text-lg font-bold text-slate-800">3,576 <span class="text-xs text-slate-500 font-normal">Patients</span></span>
+                                <span class="text-sm font-semibold text-red-600">32 <span class="text-xs text-slate-500 font-normal">Deaths</span></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <p class="text-slate-600 text-sm leading-relaxed">
+                        From an epidemiological perspective, the most critical metric is the Case Fatality Rate (CFR), which climbed from <strong>0.62% in 2025 to 0.89% in 2026</strong>. This inverse relationship—lower volume coupled with higher lethality—suggests a shift in the environmental or demographic risk profile. For public health policy, this necessitates a transition from broad awareness campaigns to high-acuity clinical triage protocols, as the 2026 data reflects a higher concentration of life-threatening conditions, such as heatstroke, over less severe heat exhaustion.
+                    </p>
+                </div>
+
+                <!-- Deep Dive: Metropolitan & Provincial Cards Grid -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    
+                    <!-- Metro Card -->
+                    <div class="bg-white rounded-2xl p-6 border border-slate-200/80 shadow-sm space-y-4 flex flex-col justify-between">
+                        <div>
+                            <div class="flex items-center gap-2 mb-3">
+                                <span class="p-1.5 bg-blue-50 text-blue-600 rounded-md">
+                                    <i data-lucide="building-2" class="w-4 h-4"></i>
+                                </span>
+                                <h3 class="font-bold text-slate-900 text-base">Primary Metropolitan Analysis</h3>
+                            </div>
+                            <div class="space-y-4 text-xs text-slate-600 leading-relaxed">
+                                <div class="bg-slate-50 p-3 rounded-lg border border-slate-100">
+                                    <span class="font-bold text-slate-800 block mb-1">Gyeonggi (Highest Volume Region)</span>
+                                    Gyeonggi continues to represent the largest regional burden (composition ratio rose from 23.1% to 24.7%). However, it demonstrated remarkable clinical resilience: despite 885 patients in 2026, fatalities dropped from 5 to 2, reducing CFR from <strong class="text-emerald-600">0.56% to 0.23%</strong>.
+                                </div>
+                                <div class="bg-red-50/50 p-3 rounded-lg border border-red-100">
+                                    <span class="font-bold text-red-900 block mb-1">Seoul (The Growing Concern)</span>
+                                    Seoul saw a <strong class="text-red-700">37.3% surge</strong> in patients (327 to 449) and a doubling of fatalities (3 to 6). Its composition share expanded from 8.4% to 12.6%, and CFR escalated from <strong class="text-red-600">0.92% to 1.34%</strong>, signaling urban heat island risks and geriatric vulnerability.
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Provincial Card -->
+                    <div class="bg-white rounded-2xl p-6 border border-slate-200/80 shadow-sm space-y-4 flex flex-col justify-between">
+                        <div>
+                            <div class="flex items-center gap-2 mb-3">
+                                <span class="p-1.5 bg-purple-50 text-purple-600 rounded-md">
+                                    <i data-lucide="map-pin" class="w-4 h-4"></i>
+                                </span>
+                                <h3 class="font-bold text-slate-900 text-base">Regional Mortality Shifts</h3>
+                            </div>
+                            <div class="space-y-4 text-xs text-slate-600 leading-relaxed">
+                                <div class="bg-red-50/50 p-3 rounded-lg border border-red-100">
+                                    <span class="font-bold text-red-900 block mb-1">Jeonbuk Mortality Spike</span>
+                                    Fatalities rose sharply from 1 to 6 despite a stable patient count (215 to 223), resulting in a localized CFR of <strong class="text-red-600">2.69%</strong>—nearly triple the national average, marking acute care vulnerabilities.
+                                </div>
+                                <div class="bg-emerald-50/50 p-3 rounded-lg border border-emerald-100">
+                                    <span class="font-bold text-emerald-900 block mb-1">Proactive Mitigation Models</span>
+                                    Gyeongbuk halved its deaths (4 to 2). <strong>Chungnam</strong> achieved complete elimination of heat deaths (5 to 0), serving as a benchmark model for decoupling volume from mortality.
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+
+            </div>
+
+            <!-- Right Sidebar: Interactive Chart & Zero Fatality Benchmarks -->
+            <div class="space-y-8">
+                
+                <!-- Regional Chart -->
+                <div class="bg-white rounded-2xl p-6 border border-slate-200/80 shadow-sm space-y-4">
+                    <div class="flex justify-between items-center border-b border-slate-100 pb-3">
+                        <h3 class="text-sm font-bold text-slate-900 flex items-center gap-2">
+                            <i data-lucide="bar-chart-2" class="w-4 h-4 text-brand-600"></i>
+                            2026 Top Regional Distribution
+                        </h3>
+                    </div>
+                    <p class="text-xs text-slate-500">Top 5 administrative units by patient volume in 2026</p>
+                    <div class="h-64 relative">
+                        <canvas id="topRegionsChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- Zero-Fatality Regions Benchmark Box -->
+                <div class="bg-slate-900 text-white rounded-2xl p-6 shadow-sm border border-slate-800 space-y-4">
+                    <div class="flex items-center gap-2 text-emerald-400">
+                        <i data-lucide="shield-check" class="w-5 h-5"></i>
+                        <h3 class="text-base font-bold">Zero-Fatality Regions (2026)</h3>
+                    </div>
+                    <p class="text-xs text-slate-300 leading-relaxed">
+                        Despite national mortality spikes, these 6 reporting units successfully maintained zero heat-related deaths in 2026:
+                    </p>
+                    <div class="flex flex-wrap gap-2 pt-1">
+                        <span class="px-2.5 py-1 bg-slate-800 text-emerald-300 border border-emerald-500/30 rounded-lg text-xs font-medium">Jeonnam-Gwangju</span>
+                        <span class="px-2.5 py-1 bg-slate-800 text-emerald-300 border border-emerald-500/30 rounded-lg text-xs font-medium">Chungnam</span>
+                        <span class="px-2.5 py-1 bg-slate-800 text-emerald-300 border border-emerald-500/30 rounded-lg text-xs font-medium">Daegu</span>
+                        <span class="px-2.5 py-1 bg-slate-800 text-emerald-300 border border-emerald-500/30 rounded-lg text-xs font-medium">Ulsan</span>
+                        <span class="px-2.5 py-1 bg-slate-800 text-emerald-300 border border-emerald-500/30 rounded-lg text-xs font-medium">Daejeon</span>
+                        <span class="px-2.5 py-1 bg-slate-800 text-emerald-300 border border-emerald-500/30 rounded-lg text-xs font-medium">Sejong</span>
+                    </div>
+                </div>
+
+                <!-- Urban Cluster Concentration -->
+                <div class="bg-white rounded-2xl p-6 border border-slate-200/80 shadow-sm space-y-3">
+                    <h3 class="text-sm font-bold text-slate-900 flex items-center gap-2">
+                        <i data-lucide="pie-chart" class="w-4 h-4 text-brand-600"></i>
+                        Primary Cluster Share
+                    </h3>
+                    <p class="text-xs text-slate-600">
+                        Top 3 regions (Gyeonggi 24.7%, Seoul 12.6%, Gyeongnam 8.3%) represent <strong class="text-slate-900">45.6%</strong> of total national cases.
+                    </p>
+                    <div class="w-full bg-slate-100 rounded-full h-3 flex overflow-hidden">
+                        <div class="bg-blue-600 h-full" style="width: 24.7%" title="Gyeonggi 24.7%"></div>
+                        <div class="bg-red-500 h-full" style="width: 12.6%" title="Seoul 12.6%"></div>
+                        <div class="bg-purple-500 h-full" style="width: 8.3%" title="Gyeongnam 8.3%"></div>
+                        <div class="bg-slate-200 h-full" style="width: 54.4%" title="Others"></div>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- Dataset Table Section -->
+        <section class="bg-white rounded-2xl border border-slate-200/80 shadow-sm overflow-hidden">
+            <div class="p-6 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                <div>
+                    <h2 class="text-lg font-bold text-slate-900">Comprehensive Regional Statistical Dataset</h2>
+                    <p class="text-xs text-slate-500 mt-1">Full 2025 vs. 2026 sub-national comparative breakdown</p>
+                </div>
+                <!-- Search input -->
+                <div class="relative w-full sm:w-64">
+                    <i data-lucide="search" class="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"></i>
+                    <input type="text" id="tableSearch" placeholder="Search region..." class="w-full pl-9 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500">
+                </div>
+            </div>
+
+            <!-- Table Container -->
+            <div class="overflow-x-auto custom-scrollbar">
+                <table class="w-full text-left text-xs text-slate-700">
+                    <thead class="bg-slate-50 border-b border-slate-200/80 text-slate-500 font-semibold uppercase tracking-wider">
+                        <tr>
+                            <th class="py-3.5 px-4 cursor-pointer hover:bg-slate-100" onclick="sortTable(0)">Region <i data-lucide="arrow-up-down" class="inline w-3 h-3 text-slate-400"></i></th>
+                            <th class="py-3.5 px-4 text-right cursor-pointer hover:bg-slate-100" onclick="sortTable(1)">2025 Pts <i data-lucide="arrow-up-down" class="inline w-3 h-3 text-slate-400"></i></th>
+                            <th class="py-3.5 px-4 text-right cursor-pointer hover:bg-slate-100" onclick="sortTable(2)">2025 Deaths <i data-lucide="arrow-up-down" class="inline w-3 h-3 text-slate-400"></i></th>
+                            <th class="py-3.5 px-4 text-right cursor-pointer hover:bg-slate-100" onclick="sortTable(3)">2026 Pts <i data-lucide="arrow-up-down" class="inline w-3 h-3 text-slate-400"></i></th>
+                            <th class="py-3.5 px-4 text-right cursor-pointer hover:bg-slate-100" onclick="sortTable(4)">2026 Deaths <i data-lucide="arrow-up-down" class="inline w-3 h-3 text-slate-400"></i></th>
+                            <th class="py-3.5 px-4 text-right cursor-pointer hover:bg-slate-100" onclick="sortTable(5)">2026 Comp% <i data-lucide="arrow-up-down" class="inline w-3 h-3 text-slate-400"></i></th>
+                            <th class="py-3.5 px-4 text-right cursor-pointer hover:bg-slate-100" onclick="sortTable(6)">Pts Change <i data-lucide="arrow-up-down" class="inline w-3 h-3 text-slate-400"></i></th>
+                            <th class="py-3.5 px-4 text-right cursor-pointer hover:bg-slate-100" onclick="sortTable(7)">Deaths Change <i data-lucide="arrow-up-down" class="inline w-3 h-3 text-slate-400"></i></th>
+                            <th class="py-3.5 px-4 text-right cursor-pointer hover:bg-slate-100" onclick="sortTable(8)">2026 CFR <i data-lucide="arrow-up-down" class="inline w-3 h-3 text-slate-400"></i></th>
+                        </tr>
+                    </thead>
+                    <tbody id="dataTableBody" class="divide-y divide-slate-100 font-medium">
+                        <!-- JS generated rows will load here -->
+                    </tbody>
+                </table>
+            </div>
+            <div class="p-4 bg-slate-50 border-t border-slate-100 text-xs text-slate-500 flex justify-between items-center">
+                <span>* Note: Jeonnam and Gwangju are reported as a single integrated administrative unit per source data.</span>
+                <span id="rowCount">Showing all regions</span>
+            </div>
+        </section>
+
+    </main>
+
+    <footer class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-12 pt-6 border-t border-slate-200 text-center text-xs text-slate-500">
+        <p>Public Health Statistical Surveillance Report • South Korea Heat Illness Data (2025–2026)</p>
+    </footer>
+
+    <!-- Scripting for Table, Data Processing, and Charts -->
+    <script>
+        // Dataset definition
+        const dataset = [
+            { region: 'National Total', pts2025: 3885, deaths2025: 24, pts2026: 3576, deaths2026: 32, comp2026: 100.0, ptsChange: -309, deathsChange: 8, isTotal: true },
+            { region: 'Gyeonggi', pts2025: 899, deaths2025: 5, pts2026: 885, deaths2026: 2, comp2026: 24.7, ptsChange: -14, deathsChange: -3 },
+            { region: 'Seoul', pts2025: 327, deaths2025: 3, pts2026: 449, deaths2026: 6, comp2026: 12.6, ptsChange: 122, deathsChange: 3 },
+            { region: 'Gyeongnam', pts2025: 335, deaths2025: 2, pts2026: 297, deaths2026: 3, comp2026: 8.3, ptsChange: -38, deathsChange: 1 },
+            { region: 'Jeonnam-Gwangju', pts2025: 361, deaths2025: 2, pts2026: 284, deaths2026: 0, comp2026: 7.9, ptsChange: -77, deathsChange: -2 },
+            { region: 'Gyeongbuk', pts2025: 373, deaths2025: 4, pts2026: 276, deaths2026: 2, comp2026: 7.7, ptsChange: -97, deathsChange: -2 },
+            { region: 'Chungnam', pts2025: 193, deaths2025: 5, pts2026: 226, deaths2026: 0, comp2026: 6.3, ptsChange: 33, deathsChange: -5 },
+            { region: 'Jeonbuk', pts2025: 215, deaths2025: 1, pts2026: 223, deaths2026: 6, comp2026: 6.2, ptsChange: 8, deathsChange: 5 },
+            { region: 'Incheon', pts2025: 252, deaths2025: 2, pts2026: 182, deaths2026: 4, comp2026: 5.1, ptsChange: -70, deathsChange: 2 },
+            { region: 'Gangwon', pts2025: 153, deaths2025: 0, pts2026: 147, deaths2026: 3, comp2026: 4.1, ptsChange: -6, deathsChange: 3 },
+            { region: 'Ulsan', pts2025: 153, deaths2025: 0, pts2026: 145, deaths2026: 0, comp2026: 4.1, ptsChange: -8, deathsChange: 0 },
+            { region: 'Chungbuk', pts2025: 191, deaths2025: 0, pts2026: 135, deaths2026: 1, comp2026: 3.8, ptsChange: -56, deathsChange: 1 },
+            { region: 'Busan', pts2025: 144, deaths2025: 1, pts2026: 93, deaths2026: 3, comp2026: 2.6, ptsChange: -51, deathsChange: 2 },
+            { region: 'Daegu', pts2025: 129, deaths2025: 0, pts2026: 82, deaths2026: 0, comp2026: 2.3, ptsChange: -47, deathsChange: 0 },
+            { region: 'Jeju', pts2025: 83, deaths2025: 0, pts2026: 76, deaths2026: 1, comp2026: 2.1, ptsChange: -7, deathsChange: 1 },
+            { region: 'Daejeon', pts2025: 47, deaths2025: 0, pts2026: 49, deaths2026: 0, comp2026: 1.4, ptsChange: 2, deathsChange: 0 },
+            { region: 'Sejong', pts2025: 30, deaths2025: 0, pts2026: 27, deaths2026: 0, comp2026: 0.8, ptsChange: -3, deathsChange: 0 }
+        ];
+
+        let currentSortCol = null;
+        let currentSortAsc = true;
+
+        // Render Table Function
+        function renderTable(data) {
+            const tbody = document.getElementById('dataTableBody');
+            tbody.innerHTML = '';
+
+            data.forEach(item => {
+                const tr = document.createElement('tr');
+                if (item.isTotal) {
+                    tr.className = "bg-slate-900 text-white font-bold hover:bg-slate-800 transition-colors";
+                } else {
+                    tr.className = "hover:bg-slate-50 transition-colors";
+                }
+
+                const cfr2026 = ((item.deaths2026 / item.pts2026) * 100).toFixed(2);
+                
+                // Format change indicators
+                const ptsChangeFormatted = item.ptsChange > 0 ? `+${item.ptsChange}` : `${item.ptsChange}`;
+                const deathsChangeFormatted = item.deathsChange > 0 ? `+${item.deathsChange}` : `${item.deathsChange}`;
+
+                let deathClass = "text-slate-600";
+                if (item.deathsChange > 0) deathClass = item.isTotal ? "text-red-400 font-bold" : "text-red-600 font-semibold";
+                else if (item.deathsChange < 0) deathClass = item.isTotal ? "text-emerald-400 font-bold" : "text-emerald-600 font-semibold";
+
+                let ptsClass = "text-slate-600";
+                if (item.ptsChange > 0) ptsClass = item.isTotal ? "text-red-400 font-bold" : "text-red-600 font-semibold";
+                else if (item.ptsChange < 0) ptsClass = item.isTotal ? "text-emerald-400 font-bold" : "text-emerald-600 font-semibold";
+
+                tr.innerHTML = `
+                    <td class="py-3 px-4 ${item.isTotal ? 'text-white font-bold' : 'text-slate-900 font-semibold'}">${item.region}</td>
+                    <td class="py-3 px-4 text-right">${item.pts2025.toLocaleString()}</td>
+                    <td class="py-3 px-4 text-right">${item.deaths2025}</td>
+                    <td class="py-3 px-4 text-right font-bold">${item.pts2026.toLocaleString()}</td>
+                    <td class="py-3 px-4 text-right font-bold ${item.deaths2026 > 0 ? (item.isTotal ? 'text-red-400' : 'text-red-600') : ''}">${item.deaths2026}</td>
+                    <td class="py-3 px-4 text-right">${item.comp2026.toFixed(1)}%</td>
+                    <td class="py-3 px-4 text-right ${ptsClass}">${ptsChangeFormatted}</td>
+                    <td class="py-3 px-4 text-right ${deathClass}">${deathsChangeFormatted}</td>
+                    <td class="py-3 px-4 text-right font-bold ${cfr2026 > 1.0 ? 'text-red-600' : ''}">${cfr2026}%</td>
+                `;
+                tbody.appendChild(tr);
+            });
+
+            document.getElementById('rowCount').textContent = `Showing ${data.length} entries`;
+        }
+
+        // Search Filter
+        document.getElementById('tableSearch').addEventListener('input', function(e) {
+            const query = e.target.value.toLowerCase();
+            const filtered = dataset.filter(item => item.region.toLowerCase().includes(query));
+            renderTable(filtered);
+        });
+
+        // Column Sort
+        function sortTable(colIndex) {
+            if (currentSortCol === colIndex) {
+                currentSortAsc = !currentSortAsc;
+            } else {
+                currentSortCol = colIndex;
+                currentSortAsc = true;
+            }
+
+            const sorted = [...dataset].sort((a, b) => {
+                let valA, valB;
+                switch(colIndex) {
+                    case 0: valA = a.region; valB = b.region; break;
+                    case 1: valA = a.pts2025; valB = b.pts2025; break;
+                    case 2: valA = a.deaths2025; valB = b.deaths2025; break;
+                    case 3: valA = a.pts2026; valB = b.pts2026; break;
+                    case 4: valA = a.deaths2026; valB = b.deaths2026; break;
+                    case 5: valA = a.comp2026; valB = b.comp2026; break;
+                    case 6: valA = a.ptsChange; valB = b.ptsChange; break;
+                    case 7: valA = a.deathsChange; valB = b.deathsChange; break;
+                    case 8: valA = (a.deaths2026 / a.pts2026); valB = (b.deaths2026 / b.pts2026); break;
+                }
+
+                if (a.isTotal) return -1;
+                if (b.isTotal) return 1;
+
+                if (valA < valB) return currentSortAsc ? -1 : 1;
+                if (valA > valB) return currentSortAsc ? 1 : -1;
+                return 0;
+            });
+
+            renderTable(sorted);
+        }
+
+        // Initialize Chart
+        function initChart() {
+            const topRegions = dataset.filter(d => !d.isTotal).slice(0, 5);
+            const ctx = document.getElementById('topRegionsChart').getContext('2d');
+            
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: topRegions.map(r => r.region),
+                    datasets: [
+                        {
+                            label: '2025 Patients',
+                            data: topRegions.map(r => r.pts2025),
+                            backgroundColor: 'rgba(148, 163, 184, 0.7)',
+                            borderRadius: 6,
+                        },
+                        {
+                            label: '2026 Patients',
+                            data: topRegions.map(r => r.pts2026),
+                            backgroundColor: 'rgba(37, 99, 235, 0.85)',
+                            borderRadius: 6,
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                boxWidth: 12,
+                                font: { size: 11 }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: { grid: { display: false } },
+                        y: { grid: { color: '#f1f5f9' }, beginAtZero: true }
+                    }
+                }
+            });
+        }
+
+        // On DOM Content Loaded
+        document.addEventListener('DOMContentLoaded', () => {
+            lucide.createIcons();
+            renderTable(dataset);
+            initChart();
+        });
+    </script>
+</body>
+</html>
