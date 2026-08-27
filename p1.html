@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Heat-Related Illness and Fatality Analysis (2025–2026)</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800 antialiased min-h-screen py-10 px-4 sm:px-6 lg:px-8">
+
+    <div class="max-w-4xl mx-auto space-y-8">
+        
+        <!-- Header -->
+        <header class="bg-gradient-to-r from-amber-600 via-orange-600 to-red-600 text-white rounded-2xl p-8 shadow-lg text-center sm:text-left">
+            <div class="inline-block px-3 py-1 bg-white/20 backdrop-blur-md rounded-full text-xs font-semibold uppercase tracking-wider mb-3">
+                Comparative Report
+            </div>
+            <h1 class="text-3xl sm:text-4xl font-extrabold tracking-tight">
+                Heat-Related Illness & Fatality Analysis
+            </h1>
+            <p class="mt-2 text-orange-100 text-lg">
+                Comprehensive Data Breakdown for 2025–2026
+            </p>
+        </header>
+
+        <!-- Executive Summary -->
+        <section class="bg-white rounded-2xl p-6 sm:p-8 shadow-sm border border-slate-100 space-y-6">
+            <div class="border-b border-slate-100 pb-4">
+                <h2 class="text-2xl font-bold text-slate-900 flex items-center gap-2">
+                    <span class="flex h-3 w-3 rounded-full bg-red-500"></span>
+                    1. Executive Summary
+                </h2>
+            </div>
+            
+            <p class="text-slate-600 leading-relaxed text-base sm:text-lg">
+                The data reveals a significant shift in the timing and severity of heatwaves between 2025 and 2026. While 2025 saw a higher total number of heat-related illnesses, 2026 was markedly more lethal, recording a higher number of fatalities despite having fewer total reported cases.
+            </p>
+
+            <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse">
+                    <thead>
+                        <tr class="bg-slate-50 border-b border-slate-200 text-slate-600 text-xs uppercase tracking-wider">
+                            <th class="py-3 px-4 font-semibold">Year</th>
+                            <th class="py-3 px-4 font-semibold">Total Illnesses</th>
+                            <th class="py-3 px-4 font-semibold">Total Fatalities</th>
+                            <th class="py-3 px-4 font-semibold">Mortality Rate (%)</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-100 text-sm sm:text-base">
+                        <tr class="hover:bg-slate-50/50 transition-colors">
+                            <td class="py-4 px-4 font-bold text-slate-900">2025</td>
+                            <td class="py-4 px-4 text-slate-700">3,589</td>
+                            <td class="py-4 px-4 text-amber-600 font-semibold">22</td>
+                            <td class="py-4 px-4 font-medium text-slate-900">0.61%</td>
+                        </tr>
+                        <tr class="hover:bg-slate-50/50 transition-colors bg-red-50/30">
+                            <td class="py-4 px-4 font-bold text-slate-900">2026</td>
+                            <td class="py-4 px-4 text-slate-700">3,219</td>
+                            <td class="py-4 px-4 text-red-600 font-bold">31</td>
+                            <td class="py-4 px-4 font-bold text-red-600">0.96%</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- Yearly Trends and Peak Periods -->
+        <section class="bg-white rounded-2xl p-6 sm:p-8 shadow-sm border border-slate-100 space-y-6">
+            <div class="border-b border-slate-100 pb-4">
+                <h2 class="text-2xl font-bold text-slate-900">
+                    2. Yearly Trends & Peak Periods
+                </h2>
+            </div>
+
+            <div class="grid md:grid-cols-2 gap-6">
+                <!-- 2025 Card -->
+                <div class="border border-amber-200 bg-amber-50/40 rounded-xl p-5 space-y-3">
+                    <div class="flex items-center justify-between">
+                        <h3 class="text-lg font-bold text-amber-900">2025 Statistics</h3>
+                        <span class="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-amber-100 text-amber-800">July Peak</span>
+                    </div>
+                    <ul class="space-y-2 text-sm text-slate-700">
+                        <li class="flex items-start gap-2">
+                            <span class="font-bold text-amber-700 min-w-[120px]">Peak Illness Day:</span>
+                            <span>July 8, 2025 (259 cases)</span>
+                        </li>
+                        <li class="flex items-start gap-2">
+                            <span class="font-bold text-amber-700 min-w-[120px]">Peak Fatalities:</span>
+                            <span>Multiple days in July (July 2, 6, 27, and 30) each reported 2 deaths.</span>
+                        </li>
+                        <li class="flex items-start gap-2">
+                            <span class="font-bold text-amber-700 min-w-[120px]">Monthly Focus:</span>
+                            <span>July was the most critical month (~69% illnesses, ~73% fatalities).</span>
+                        </li>
+                    </ul>
+                </div>
+
+                <!-- 2026 Card -->
+                <div class="border border-red-200 bg-red-50/40 rounded-xl p-5 space-y-3">
+                    <div class="flex items-center justify-between">
+                        <h3 class="text-lg font-bold text-red-900">2026 Statistics</h3>
+                        <span class="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-red-100 text-red-800">August Peak</span>
+                    </div>
+                    <ul class="space-y-2 text-sm text-slate-700">
+                        <li class="flex items-start gap-2">
+                            <span class="font-bold text-red-700 min-w-[120px]">Peak Illness Day:</span>
+                            <span>August 7, 2026 (239 cases)</span>
+                        </li>
+                        <li class="flex items-start gap-2">
+                            <span class="font-bold text-red-700 min-w-[120px]">Peak Fatality Day:</span>
+                            <span>August 8, 2026 (5 deaths)</span>
+                        </li>
+                        <li class="flex items-start gap-2">
+                            <span class="font-bold text-red-700 min-w-[120px]">Monthly Focus:</span>
+                            <span>Shifted to August (>54% illnesses, >51% fatalities).</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- Monthly Comparison -->
+        <section class="bg-white rounded-2xl p-6 sm:p-8 shadow-sm border border-slate-100 space-y-6">
+            <div class="border-b border-slate-100 pb-4">
+                <h2 class="text-2xl font-bold text-slate-900">
+                    3. Monthly Comparison (Visual Analysis)
+                </h2>
+                <p class="text-slate-500 text-sm mt-1">
+                    Distribution of illnesses and deaths across the summer months
+                </p>
+            </div>
+
+            <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse">
+                    <thead>
+                        <tr class="bg-slate-50 border-b border-slate-200 text-slate-600 text-xs uppercase tracking-wider">
+                            <th class="py-3 px-4 font-semibold">Year</th>
+                            <th class="py-3 px-4 font-semibold">Month</th>
+                            <th class="py-3 px-4 font-semibold">Illness Count</th>
+                            <th class="py-3 px-4 font-semibold">Fatality Count</th>
+                            <th class="py-3 px-4 font-semibold">Distribution Visual</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-100 text-sm sm:text-base">
+                        <!-- 2025 June -->
+                        <tr class="hover:bg-slate-50/50">
+                            <td class="py-3 px-4 font-medium text-slate-500">2025</td>
+                            <td class="py-3 px-4 font-semibold text-slate-800">June</td>
+                            <td class="py-3 px-4 text-slate-600">185</td>
+                            <td class="py-3 px-4 text-slate-600">1</td>
+                            <td class="py-3 px-4">
+                                <div class="w-12 bg-amber-200 h-4 rounded-full flex items-center px-1 text-[10px] text-amber-800 font-bold">185</div>
+                            </td>
+                        </tr>
+                        <!-- 2025 July -->
+                        <tr class="hover:bg-slate-50/50 bg-amber-50/20">
+                            <td class="py-3 px-4 font-medium text-slate-500">2025</td>
+                            <td class="py-3 px-4 font-bold text-amber-800">July</td>
+                            <td class="py-3 px-4 font-bold text-amber-900">2,486</td>
+                            <td class="py-3 px-4 font-bold text-amber-900">16</td>
+                            <td class="py-3 px-4">
+                                <div class="w-full bg-amber-500 h-4 rounded-full flex items-center px-2 text-[10px] text-white font-bold">2,486</div>
+                            </td>
+                        </tr>
+                        <!-- 2025 August -->
+                        <tr class="hover:bg-slate-50/50">
+                            <td class="py-3 px-4 font-medium text-slate-500">2025</td>
+                            <td class="py-3 px-4 font-semibold text-slate-800">August</td>
+                            <td class="py-3 px-4 text-slate-600">918</td>
+                            <td class="py-3 px-4 text-slate-600">5</td>
+                            <td class="py-3 px-4">
+                                <div class="w-2/5 bg-amber-300 h-4 rounded-full flex items-center px-1.5 text-[10px] text-amber-900 font-bold">918</div>
+                            </td>
+                        </tr>
+                        <!-- Divider -->
+                        <tr class="border-t-2 border-slate-200"></tr>
+                        <!-- 2026 June -->
+                        <tr class="hover:bg-slate-50/50">
+                            <td class="py-3 px-4 font-medium text-slate-500">2026</td>
+                            <td class="py-3 px-4 font-semibold text-slate-800">June</td>
+                            <td class="py-3 px-4 text-slate-600">72</td>
+                            <td class="py-3 px-4 text-slate-600">1</td>
+                            <td class="py-3 px-4">
+                                <div class="w-8 bg-red-200 h-4 rounded-full flex items-center px-1 text-[10px] text-red-800 font-bold">72</div>
+                            </td>
+                        </tr>
+                        <!-- 2026 July -->
+                        <tr class="hover:bg-slate-50/50">
+                            <td class="py-3 px-4 font-medium text-slate-500">2026</td>
+                            <td class="py-3 px-4 font-semibold text-slate-800">July</td>
+                            <td class="py-3 px-4 text-slate-600">1,388</td>
+                            <td class="py-3 px-4 text-slate-600">14</td>
+                            <td class="py-3 px-4">
+                                <div class="w-3/5 bg-red-400 h-4 rounded-full flex items-center px-2 text-[10px] text-white font-bold">1,388</div>
+                            </td>
+                        </tr>
+                        <!-- 2026 August -->
+                        <tr class="hover:bg-slate-50/50 bg-red-50/30">
+                            <td class="py-3 px-4 font-medium text-slate-500">2026</td>
+                            <td class="py-3 px-4 font-bold text-red-800">August</td>
+                            <td class="py-3 px-4 font-bold text-red-900">1,759</td>
+                            <td class="py-3 px-4 font-bold text-red-900">16</td>
+                            <td class="py-3 px-4">
+                                <div class="w-3/4 bg-red-600 h-4 rounded-full flex items-center px-2 text-[10px] text-white font-bold">1,759</div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- Key Findings -->
+        <section class="bg-white rounded-2xl p-6 sm:p-8 shadow-sm border border-slate-100 space-y-6">
+            <div class="border-b border-slate-100 pb-4">
+                <h2 class="text-2xl font-bold text-slate-900">
+                    4. Key Findings
+                </h2>
+            </div>
+
+            <div class="space-y-4">
+                <div class="p-4 rounded-xl bg-slate-50 border-l-4 border-red-500 space-y-1">
+                    <h3 class="font-bold text-slate-900 text-base sm:text-lg">Severity of 2026</h3>
+                    <p class="text-slate-600 text-sm sm:text-base leading-relaxed">
+                        Although 2026 had roughly <strong>10% fewer reported illnesses</strong> (3,219 vs. 3,589), the death toll <strong>rose by 41%</strong> (31 vs. 22). This suggests that the heat events in 2026 may have been more intense or affected more vulnerable populations.
+                    </p>
+                </div>
+
+                <div class="p-4 rounded-xl bg-slate-50 border-l-4 border-amber-500 space-y-1">
+                    <h3 class="font-bold text-slate-900 text-base sm:text-lg">Shift in Peak Heat</h3>
+                    <p class="text-slate-600 text-sm sm:text-base leading-relaxed">
+                        In 2025, the heat crisis was concentrated in early-to-mid July. In 2026, the peak shifted to early August, specifically the first week of August (Aug 3–8), which saw a sustained period of high illness and fatality rates.
+                    </p>
+                </div>
+
+                <div class="p-4 rounded-xl bg-slate-50 border-l-4 border-red-700 space-y-1">
+                    <h3 class="font-bold text-slate-900 text-base sm:text-lg">Lethality of August 2026</h3>
+                    <p class="text-slate-600 text-sm sm:text-base leading-relaxed">
+                        The period between <strong>August 3 and August 8, 2026</strong>, was particularly devastating, recording <strong>14 deaths in just six days</strong>.
+                    </p>
+                </div>
+            </div>
+        </section>
+
+    </div>
+
+</body>
+</html>
