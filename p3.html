@@ -1,0 +1,2119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AeroBeach Busan // Weather & Marine Intelligence</title>
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <!-- Google Fonts: Outfit & Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <!-- Leaflet CSS & JS for Interactive Map -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+  <style>
+    :root {
+      --bg-gradient-1: #f4f7fc;
+      --bg-gradient-2: #e8effd;
+      --bg-gradient-3: #e0f2fe;
+      --primary-navy: #0f172a;
+      --secondary-slate: #475569;
+      --accent-cyan: #00e5ff;
+      --accent-blue: #3b82f6;
+      --accent-indigo: #6366f1;
+      --accent-emerald: #10b981;
+      --accent-amber: #f59e0b;
+      --accent-coral: #ff6b81;
+      --glass-bg: rgba(255, 255, 255, 0.65);
+      --glass-border: rgba(255, 255, 255, 0.85);
+      --glass-shadow: 0 10px 30px -5px rgba(0, 229, 255, 0.12), 0 4px 16px rgba(15, 23, 42, 0.04);
+      --card-radius: 24px;
+      --transition-smooth: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    body {
+      background: linear-gradient(135deg, var(--bg-gradient-1) 0%, var(--bg-gradient-2) 50%, var(--bg-gradient-3) 100%);
+      color: var(--primary-navy);
+      min-height: 100vh;
+      position: relative;
+      overflow-x: hidden;
+      padding-bottom: 40px;
+    }
+
+    /* Ambient Canvas */
+    #ambientCanvas {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      pointer-events: none;
+      z-index: 0;
+      opacity: 0.8;
+    }
+
+    .app-container {
+      position: relative;
+      z-index: 1;
+      max-width: 1280px;
+      margin: 0 auto;
+      padding: 24px 20px;
+    }
+
+    /* Header */
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+      padding: 16px 24px;
+      background: var(--glass-bg);
+      backdrop-filter: blur(18px);
+      -webkit-backdrop-filter: blur(18px);
+      border: 1px solid var(--glass-border);
+      border-radius: var(--card-radius);
+      box-shadow: var(--glass-shadow);
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .brand-logo {
+      width: 42px;
+      height: 42px;
+      background: linear-gradient(135deg, var(--accent-cyan), var(--accent-blue));
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      box-shadow: 0 4px 14px rgba(0, 229, 255, 0.4);
+      animation: floatLogo 4s ease-in-out infinite alternate;
+    }
+
+    @keyframes floatLogo {
+      0% { transform: translateY(0px) rotate(0deg); }
+      100% { transform: translateY(-4px) rotate(3deg); }
+    }
+
+    .brand-text h1 {
+      font-family: 'Outfit', sans-serif;
+      font-size: 1.35rem;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      background: linear-gradient(90deg, var(--primary-navy), var(--accent-blue));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      text-transform: uppercase;
+    }
+
+    .brand-text p {
+      font-size: 0.72rem;
+      color: var(--secondary-slate);
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .live-badge {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 12px;
+      background: rgba(16, 185, 129, 0.1);
+      border: 1px solid rgba(16, 185, 129, 0.25);
+      border-radius: 20px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: var(--accent-emerald);
+    }
+
+    .pulse-dot {
+      width: 8px;
+      height: 8px;
+      background-color: var(--accent-emerald);
+      border-radius: 50%;
+      animation: pulse 1.8s infinite;
+    }
+
+    @keyframes pulse {
+      0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); }
+      70% { transform: scale(1); box-shadow: 0 0 0 8px rgba(16, 185, 129, 0); }
+      100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+    }
+
+    .geo-btn {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 18px;
+      background: rgba(59, 130, 246, 0.08);
+      border: 1px solid rgba(59, 130, 246, 0.2);
+      border-radius: 14px;
+      color: var(--accent-blue);
+      font-size: 0.82rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: var(--transition-smooth);
+    }
+
+    .geo-btn:hover {
+      background: var(--accent-blue);
+      color: white;
+      box-shadow: 0 6px 20px rgba(59, 130, 246, 0.35);
+      transform: translateY(-2px);
+    }
+
+    /* Beach Selector Carousel */
+    .beach-selector-container {
+      margin-bottom: 24px;
+      overflow-x: auto;
+      padding: 4px 2px 12px 2px;
+      scrollbar-width: thin;
+      scrollbar-color: rgba(59, 130, 246, 0.3) transparent;
+    }
+
+    .beach-selector-container::-webkit-scrollbar {
+      height: 6px;
+    }
+
+    .beach-selector-container::-webkit-scrollbar-thumb {
+      background: rgba(59, 130, 246, 0.2);
+      border-radius: 10px;
+    }
+
+    .beach-pills {
+      display: flex;
+      gap: 12px;
+      width: max-content;
+    }
+
+    .beach-pill {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 12px 20px;
+      background: var(--glass-bg);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid var(--glass-border);
+      border-radius: 16px;
+      cursor: pointer;
+      transition: var(--transition-smooth);
+      box-shadow: var(--glass-shadow);
+    }
+
+    .beach-pill:hover {
+      transform: translateY(-3px);
+      border-color: var(--accent-cyan);
+    }
+
+    .beach-pill.active {
+      background: linear-gradient(135deg, rgba(255, 255, 255, 0.95), rgba(224, 242, 254, 0.9));
+      border: 2px solid var(--accent-cyan);
+      box-shadow: 0 8px 25px rgba(0, 229, 255, 0.3);
+    }
+
+    .pill-info {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .pill-name {
+      font-family: 'Outfit', sans-serif;
+      font-weight: 700;
+      font-size: 0.9rem;
+      color: var(--primary-navy);
+    }
+
+    .pill-kr {
+      font-size: 0.7rem;
+      color: var(--secondary-slate);
+    }
+
+    .pill-temp {
+      font-family: 'Outfit', sans-serif;
+      font-weight: 800;
+      font-size: 0.95rem;
+      color: var(--accent-blue);
+      padding-left: 8px;
+      border-left: 1px solid rgba(15, 23, 42, 0.1);
+    }
+
+    /* Futuristic Date Selector Bar */
+    .date-selector-card {
+      background: var(--glass-bg);
+      backdrop-filter: blur(18px);
+      -webkit-backdrop-filter: blur(18px);
+      border: 1px solid var(--glass-border);
+      border-radius: 20px;
+      padding: 14px 20px;
+      box-shadow: var(--glass-shadow);
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 14px;
+    }
+
+    .date-title-group {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .date-icon-badge {
+      width: 36px;
+      height: 36px;
+      background: linear-gradient(135deg, rgba(0, 229, 255, 0.15), rgba(59, 130, 246, 0.15));
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--accent-blue);
+    }
+
+    .date-label-text {
+      font-family: 'Outfit', sans-serif;
+      font-size: 0.95rem;
+      font-weight: 800;
+      color: var(--primary-navy);
+    }
+
+    .date-sub-text {
+      font-size: 0.72rem;
+      color: var(--secondary-slate);
+      font-weight: 600;
+    }
+
+    .date-controls {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .date-preset-pills {
+      display: flex;
+      gap: 6px;
+      background: rgba(15, 23, 42, 0.04);
+      padding: 4px;
+      border-radius: 14px;
+      border: 1px solid rgba(255, 255, 255, 0.8);
+    }
+
+    .date-preset-btn {
+      padding: 6px 14px;
+      border: none;
+      background: transparent;
+      border-radius: 10px;
+      font-family: 'Outfit', sans-serif;
+      font-size: 0.78rem;
+      font-weight: 700;
+      color: var(--secondary-slate);
+      cursor: pointer;
+      transition: var(--transition-smooth);
+    }
+
+    .date-preset-btn:hover {
+      color: var(--primary-navy);
+    }
+
+    .date-preset-btn.active {
+      background: white;
+      color: var(--accent-blue);
+      box-shadow: 0 4px 12px rgba(0, 229, 255, 0.25);
+    }
+
+    .date-picker-wrapper {
+      position: relative;
+      display: flex;
+      align-items: center;
+    }
+
+    .futuristic-date-input {
+      background: rgba(255, 255, 255, 0.9);
+      border: 1px solid rgba(59, 130, 246, 0.3);
+      border-radius: 12px;
+      padding: 7px 14px 7px 34px;
+      font-family: 'Outfit', sans-serif;
+      font-size: 0.82rem;
+      font-weight: 700;
+      color: var(--primary-navy);
+      outline: none;
+      cursor: pointer;
+      box-shadow: 0 2px 10px rgba(0, 229, 255, 0.1);
+      transition: var(--transition-smooth);
+    }
+
+    .futuristic-date-input:focus, .futuristic-date-input:hover {
+      border-color: var(--accent-cyan);
+      box-shadow: 0 4px 16px rgba(0, 229, 255, 0.3);
+    }
+
+    .date-picker-icon {
+      position: absolute;
+      left: 10px;
+      width: 16px;
+      height: 16px;
+      color: var(--accent-blue);
+      pointer-events: none;
+    }
+
+    /* Map Section Styling */
+    .map-card {
+      background: var(--glass-bg);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1px solid var(--glass-border);
+      border-radius: var(--card-radius);
+      padding: 20px;
+      box-shadow: var(--glass-shadow);
+      margin-bottom: 24px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .map-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 14px;
+    }
+
+    .map-title {
+      font-family: 'Outfit', sans-serif;
+      font-size: 1.1rem;
+      font-weight: 800;
+      color: var(--primary-navy);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .map-subtitle {
+      font-size: 0.78rem;
+      color: var(--secondary-slate);
+    }
+
+    #busanMap {
+      width: 100%;
+      height: 380px;
+      border-radius: 18px;
+      z-index: 1;
+      border: 1px solid rgba(255, 255, 255, 0.8);
+      box-shadow: inset 0 0 15px rgba(15, 23, 42, 0.05);
+    }
+
+    /* Custom Futuristic Map Marker */
+    .custom-beach-pin {
+      background: rgba(255, 255, 255, 0.92);
+      border: 2px solid var(--accent-blue);
+      border-radius: 20px;
+      padding: 4px 10px;
+      box-shadow: 0 6px 18px rgba(0, 229, 255, 0.35);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      white-space: nowrap;
+      cursor: pointer;
+      transition: all 0.25s ease;
+      transform: translate(-50%, -100%);
+    }
+
+    .custom-beach-pin:hover, .custom-beach-pin.active {
+      background: var(--primary-navy);
+      color: white;
+      border-color: var(--accent-cyan);
+      transform: translate(-50%, -108%) scale(1.08);
+      box-shadow: 0 10px 25px rgba(0, 229, 255, 0.5);
+    }
+
+    .custom-beach-pin .pin-icon {
+      width: 18px;
+      height: 18px;
+    }
+
+    .custom-beach-pin .pin-name {
+      font-family: 'Outfit', sans-serif;
+      font-size: 0.75rem;
+      font-weight: 700;
+    }
+
+    .custom-beach-pin .pin-temp {
+      font-family: 'Outfit', sans-serif;
+      font-size: 0.8rem;
+      font-weight: 800;
+      color: var(--accent-cyan);
+    }
+
+    /* Leaflet Popup Futuristic Restyle */
+    .leaflet-popup-content-wrapper {
+      background: rgba(255, 255, 255, 0.95) !important;
+      backdrop-filter: blur(14px);
+      border-radius: 18px !important;
+      border: 1px solid var(--glass-border);
+      box-shadow: 0 12px 30px rgba(0, 229, 255, 0.25) !important;
+      padding: 4px !important;
+    }
+
+    .leaflet-popup-tip {
+      background: rgba(255, 255, 255, 0.95) !important;
+    }
+
+    .map-popup-card {
+      padding: 10px 12px;
+      min-width: 180px;
+    }
+
+    .popup-beach-name {
+      font-family: 'Outfit', sans-serif;
+      font-size: 0.95rem;
+      font-weight: 800;
+      color: var(--primary-navy);
+      margin-bottom: 2px;
+    }
+
+    .popup-kr {
+      font-size: 0.72rem;
+      color: var(--secondary-slate);
+      margin-bottom: 8px;
+      display: block;
+    }
+
+    .popup-weather-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-top: 6px;
+      background: rgba(0, 229, 255, 0.08);
+      padding: 6px 10px;
+      border-radius: 12px;
+    }
+
+    .popup-temp {
+      font-family: 'Outfit', sans-serif;
+      font-size: 1.4rem;
+      font-weight: 800;
+      color: var(--accent-blue);
+    }
+
+    .popup-metrics {
+      display: flex;
+      flex-direction: column;
+      font-size: 0.7rem;
+      color: var(--secondary-slate);
+      font-weight: 600;
+    }
+
+    .popup-action-btn {
+      margin-top: 10px;
+      width: 100%;
+      padding: 6px;
+      background: linear-gradient(135deg, var(--accent-cyan), var(--accent-blue));
+      color: white;
+      border: none;
+      border-radius: 10px;
+      font-size: 0.75rem;
+      font-weight: 700;
+      cursor: pointer;
+      text-align: center;
+      transition: var(--transition-smooth);
+    }
+
+    .popup-action-btn:hover {
+      opacity: 0.9;
+      transform: translateY(-1px);
+    }
+
+    /* Main Grid Layout */
+    .dashboard-grid {
+      display: grid;
+      grid-template-columns: 1fr 2fr;
+      gap: 24px;
+      margin-bottom: 24px;
+    }
+
+    @media (max-width: 992px) {
+      .dashboard-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    /* Hero Beach Panel */
+    .hero-card {
+      background: var(--glass-bg);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1px solid var(--glass-border);
+      border-radius: var(--card-radius);
+      padding: 30px;
+      box-shadow: var(--glass-shadow);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .hero-card::before {
+      content: '';
+      position: absolute;
+      top: -50px;
+      right: -50px;
+      width: 180px;
+      height: 180px;
+      background: radial-gradient(circle, rgba(0, 229, 255, 0.25) 0%, rgba(255,255,255,0) 70%);
+      pointer-events: none;
+    }
+
+    .beach-header-meta {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 20px;
+    }
+
+    .beach-title-group h2 {
+      font-family: 'Outfit', sans-serif;
+      font-size: 1.85rem;
+      font-weight: 800;
+      color: var(--primary-navy);
+      line-height: 1.1;
+    }
+
+    .beach-kr-sub {
+      font-size: 0.85rem;
+      color: var(--secondary-slate);
+      margin-top: 4px;
+      display: inline-block;
+      padding: 2px 8px;
+      background: rgba(15, 23, 42, 0.05);
+      border-radius: 6px;
+    }
+
+    .coordinates-pill {
+      font-size: 0.72rem;
+      font-family: monospace;
+      color: var(--accent-blue);
+      background: rgba(59, 130, 246, 0.08);
+      padding: 4px 10px;
+      border-radius: 8px;
+      border: 1px solid rgba(59, 130, 246, 0.15);
+    }
+
+    .weather-main-display {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin: 20px 0;
+    }
+
+    .temp-large {
+      font-family: 'Outfit', sans-serif;
+      font-size: 4rem;
+      font-weight: 800;
+      line-height: 1;
+      background: linear-gradient(180deg, var(--primary-navy) 30%, var(--accent-blue) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      letter-spacing: -0.04em;
+    }
+
+    .feels-like {
+      font-size: 0.85rem;
+      color: var(--secondary-slate);
+      margin-top: 6px;
+      font-weight: 500;
+    }
+
+    .weather-icon-wrapper {
+      width: 100px;
+      height: 100px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+    }
+
+    .weather-icon-svg {
+      width: 100%;
+      height: 100%;
+      filter: drop-shadow(0 8px 16px rgba(0, 229, 255, 0.3));
+      animation: pulseIcon 3s ease-in-out infinite alternate;
+    }
+
+    @keyframes pulseIcon {
+      0% { transform: scale(1); }
+      100% { transform: scale(1.06); }
+    }
+
+    .condition-tag {
+      font-family: 'Outfit', sans-serif;
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: var(--primary-navy);
+      text-transform: capitalize;
+    }
+
+    /* Activity Suitability Panel */
+    .activities-container {
+      margin-top: 24px;
+      border-top: 1px solid rgba(15, 23, 42, 0.08);
+      padding-top: 20px;
+    }
+
+    .activities-title {
+      font-size: 0.78rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--secondary-slate);
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .activity-chips {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+    }
+
+    .activity-card {
+      background: rgba(255, 255, 255, 0.7);
+      border: 1px solid rgba(255, 255, 255, 0.9);
+      border-radius: 14px;
+      padding: 10px;
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .activity-icon {
+      width: 22px;
+      height: 22px;
+      color: var(--accent-blue);
+    }
+
+    .activity-name {
+      font-size: 0.7rem;
+      font-weight: 600;
+      color: var(--secondary-slate);
+    }
+
+    .activity-status {
+      font-family: 'Outfit', sans-serif;
+      font-size: 0.78rem;
+      font-weight: 800;
+      padding: 2px 8px;
+      border-radius: 12px;
+    }
+
+    .status-safe { background: rgba(16, 185, 129, 0.15); color: #047857; }
+    .status-caution { background: rgba(245, 158, 11, 0.15); color: #b45309; }
+    .status-danger { background: rgba(255, 107, 129, 0.15); color: #be123c; }
+
+    /* HUD Metrics Grid */
+    .hud-metrics-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 20px;
+    }
+
+    @media (max-width: 640px) {
+      .hud-metrics-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .metric-card {
+      background: var(--glass-bg);
+      backdrop-filter: blur(18px);
+      -webkit-backdrop-filter: blur(18px);
+      border: 1px solid var(--glass-border);
+      border-radius: var(--card-radius);
+      padding: 22px;
+      box-shadow: var(--glass-shadow);
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      transition: var(--transition-smooth);
+    }
+
+    .metric-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 12px 35px -5px rgba(0, 229, 255, 0.2);
+    }
+
+    .metric-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 14px;
+    }
+
+    .metric-title {
+      font-size: 0.8rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--secondary-slate);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .metric-icon-badge {
+      width: 32px;
+      height: 32px;
+      background: rgba(0, 229, 255, 0.1);
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--accent-blue);
+    }
+
+    .metric-body {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .metric-value-group {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .metric-value {
+      font-family: 'Outfit', sans-serif;
+      font-size: 2.2rem;
+      font-weight: 800;
+      color: var(--primary-navy);
+      line-height: 1;
+    }
+
+    .metric-unit {
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: var(--secondary-slate);
+      margin-left: 2px;
+    }
+
+    .metric-subtext {
+      font-size: 0.78rem;
+      color: var(--secondary-slate);
+      margin-top: 6px;
+      font-weight: 500;
+    }
+
+    /* Circular SVG Gauge */
+    .gauge-wrapper {
+      position: relative;
+      width: 72px;
+      height: 72px;
+    }
+
+    .gauge-svg {
+      width: 100%;
+      height: 100%;
+      transform: rotate(-90deg);
+    }
+
+    .gauge-bg {
+      fill: none;
+      stroke: rgba(15, 23, 42, 0.08);
+      stroke-width: 6;
+    }
+
+    .gauge-fill {
+      fill: none;
+      stroke: url(#cyanBlueGrad);
+      stroke-width: 6;
+      stroke-linecap: round;
+      stroke-dasharray: 188.4;
+      stroke-dashoffset: 188.4;
+      transition: stroke-dashoffset 1.2s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .gauge-text {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      font-family: 'Outfit', sans-serif;
+      font-weight: 700;
+      font-size: 0.85rem;
+      color: var(--primary-navy);
+    }
+
+    /* Compass Graphic */
+    .compass-box {
+      width: 68px;
+      height: 68px;
+      border-radius: 50%;
+      border: 2px dashed rgba(59, 130, 246, 0.3);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      background: rgba(255, 255, 255, 0.5);
+    }
+
+    .compass-needle {
+      width: 4px;
+      height: 36px;
+      background: linear-gradient(180deg, var(--accent-coral) 50%, var(--accent-blue) 50%);
+      border-radius: 4px;
+      transition: transform 0.8s cubic-bezier(0.34, 1.56, 0.64, 1);
+      position: relative;
+    }
+
+    .compass-needle::before {
+      content: '';
+      position: absolute;
+      top: -4px;
+      left: -3px;
+      width: 0;
+      height: 0;
+      border-left: 5px solid transparent;
+      border-right: 5px solid transparent;
+      border-bottom: 8px solid var(--accent-coral);
+    }
+
+    /* Forecast Sections */
+    .section-title {
+      font-family: 'Outfit', sans-serif;
+      font-size: 1.1rem;
+      font-weight: 800;
+      color: var(--primary-navy);
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    /* Hourly Slider */
+    .forecast-card {
+      background: var(--glass-bg);
+      backdrop-filter: blur(18px);
+      -webkit-backdrop-filter: blur(18px);
+      border: 1px solid var(--glass-border);
+      border-radius: var(--card-radius);
+      padding: 24px;
+      box-shadow: var(--glass-shadow);
+      margin-bottom: 24px;
+    }
+
+    .hourly-scroll {
+      display: flex;
+      gap: 16px;
+      overflow-x: auto;
+      padding-bottom: 10px;
+      scrollbar-width: thin;
+      scrollbar-color: rgba(59, 130, 246, 0.2) transparent;
+    }
+
+    .hourly-scroll::-webkit-scrollbar {
+      height: 6px;
+    }
+
+    .hourly-scroll::-webkit-scrollbar-thumb {
+      background: rgba(59, 130, 246, 0.2);
+      border-radius: 10px;
+    }
+
+    .hourly-item {
+      min-width: 90px;
+      background: rgba(255, 255, 255, 0.6);
+      border: 1px solid rgba(255, 255, 255, 0.8);
+      border-radius: 18px;
+      padding: 14px 10px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+      transition: var(--transition-smooth);
+    }
+
+    .hourly-item:hover {
+      background: white;
+      transform: translateY(-3px);
+      box-shadow: 0 6px 18px rgba(0, 229, 255, 0.15);
+    }
+
+    .hourly-time {
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: var(--secondary-slate);
+    }
+
+    .hourly-icon {
+      width: 28px;
+      height: 28px;
+    }
+
+    .hourly-temp {
+      font-family: 'Outfit', sans-serif;
+      font-weight: 700;
+      font-size: 1.05rem;
+      color: var(--primary-navy);
+    }
+
+    .hourly-wave {
+      font-size: 0.7rem;
+      font-weight: 600;
+      color: var(--accent-blue);
+      display: flex;
+      align-items: center;
+      gap: 2px;
+    }
+
+    /* 7-Day Extended Grid */
+    .daily-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 14px;
+    }
+
+    .daily-item {
+      background: rgba(255, 255, 255, 0.6);
+      border: 1px solid rgba(255, 255, 255, 0.85);
+      border-radius: 18px;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+      text-align: center;
+      transition: var(--transition-smooth);
+      cursor: pointer;
+    }
+
+    .daily-item:hover, .daily-item.active-day {
+      background: white;
+      border-color: var(--accent-cyan);
+      transform: translateY(-2px);
+      box-shadow: 0 8px 20px rgba(0, 229, 255, 0.2);
+    }
+
+    .daily-day {
+      font-family: 'Outfit', sans-serif;
+      font-weight: 700;
+      font-size: 0.9rem;
+      color: var(--primary-navy);
+    }
+
+    .daily-date {
+      font-size: 0.7rem;
+      color: var(--secondary-slate);
+    }
+
+    .daily-temps {
+      display: flex;
+      gap: 8px;
+      font-family: 'Outfit', sans-serif;
+      font-size: 0.9rem;
+      margin-top: 4px;
+    }
+
+    .temp-high { font-weight: 700; color: var(--primary-navy); }
+    .temp-low { font-weight: 500; color: var(--secondary-slate); }
+
+    .daily-wave-badge {
+      font-size: 0.7rem;
+      color: var(--accent-blue);
+      background: rgba(59, 130, 246, 0.08);
+      padding: 2px 8px;
+      border-radius: 10px;
+      font-weight: 600;
+    }
+
+    /* Footer */
+    footer {
+      margin-top: 32px;
+      text-align: center;
+      font-size: 0.78rem;
+      color: var(--secondary-slate);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .footer-links {
+      display: flex;
+      gap: 16px;
+    }
+
+    .footer-links a {
+      color: var(--accent-blue);
+      text-decoration: none;
+      font-weight: 600;
+    }
+
+    /* Loader Overlay */
+    .loader-overlay {
+      position: absolute;
+      inset: 0;
+      background: rgba(244, 247, 252, 0.75);
+      backdrop-filter: blur(8px);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      border-radius: var(--card-radius);
+      z-index: 10;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s ease;
+    }
+
+    .loader-overlay.active {
+      opacity: 1;
+      pointer-events: all;
+    }
+
+    .spinner {
+      width: 42px;
+      height: 42px;
+      border: 4px solid rgba(0, 229, 255, 0.2);
+      border-top-color: var(--accent-cyan);
+      border-radius: 50%;
+      animation: spin 0.9s linear infinite;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Futuristic Wave Particles Canvas -->
+  <canvas id="ambientCanvas"></canvas>
+
+  <div class="app-container">
+    
+    <!-- Header -->
+    <header>
+      <div class="brand">
+        <div class="brand-logo">
+          <i data-lucide="waves"></i>
+        </div>
+        <div class="brand-text">
+          <h1>AeroBeach Busan</h1>
+          <p>Marine Weather Intelligence</p>
+        </div>
+      </div>
+
+      <div class="header-actions">
+        <div class="live-badge">
+          <span class="pulse-dot"></span>
+          OPEN-METEO LIVE
+        </div>
+        <button class="geo-btn" id="geoBtn">
+          <i data-lucide="crosshair" style="width: 16px; height: 16px;"></i>
+          Nearest Beach
+        </button>
+      </div>
+    </header>
+
+    <!-- Beach Quick Switcher Pills -->
+    <div class="beach-selector-container">
+      <div class="beach-pills" id="beachPills">
+        <!-- Dynamically Populated Beach Pills -->
+      </div>
+    </div>
+
+    <!-- Futuristic Date Selector -->
+    <div class="date-selector-card">
+      <div class="date-title-group">
+        <div class="date-icon-badge">
+          <i data-lucide="calendar" style="width: 20px; height: 20px;"></i>
+        </div>
+        <div>
+          <div class="date-label-text" id="displaySelectedDate">Target Date: Today</div>
+          <div class="date-sub-text">Simulate ocean & weather forecast across Busan</div>
+        </div>
+      </div>
+
+      <div class="date-controls">
+        <div class="date-preset-pills">
+          <button class="date-preset-btn active" id="btnPresetToday" onclick="selectDateOffset(0)">Today</button>
+          <button class="date-preset-btn" id="btnPresetTomorrow" onclick="selectDateOffset(1)">Tomorrow</button>
+          <button class="date-preset-btn" id="btnPresetWeekend" onclick="selectWeekend()">Weekend</button>
+        </div>
+
+        <div class="date-picker-wrapper">
+          <i data-lucide="calendar-days" class="date-picker-icon"></i>
+          <input type="date" id="datePickerInput" class="futuristic-date-input" onchange="handleDatePickerChange(this.value)">
+        </div>
+      </div>
+    </div>
+
+    <!-- Interactive Busan Coastal Map -->
+    <div class="map-card">
+      <div class="map-header">
+        <div>
+          <div class="map-title">
+            <i data-lucide="map-pin" style="width: 18px; height: 18px; color: var(--accent-cyan);"></i>
+            Busan Coastal Radar & Live Map
+          </div>
+          <span class="map-subtitle">Click any location marker to zoom in and expand weather details for the selected date</span>
+        </div>
+      </div>
+      <div id="busanMap"></div>
+    </div>
+
+    <!-- Main Dashboard Grid -->
+    <div class="dashboard-grid">
+      
+      <!-- Hero Selected Beach Card -->
+      <div class="hero-card" id="heroCard">
+        <div class="loader-overlay" id="heroLoader">
+          <div class="spinner"></div>
+          <p style="margin-top: 10px; font-size: 0.8rem; font-weight: 600; color: var(--secondary-slate);">Querying Marine Satellites...</p>
+        </div>
+
+        <div>
+          <div class="beach-header-meta">
+            <div class="beach-title-group">
+              <h2 id="heroName">Haeundae Beach</h2>
+              <span class="beach-kr-sub" id="heroKrName">해운대해수욕장</span>
+            </div>
+            <div class="coordinates-pill" id="heroCoords">35.1587° N, 129.1604° E</div>
+          </div>
+
+          <div class="weather-main-display">
+            <div>
+              <div class="temp-large" id="heroTemp">--°</div>
+              <div class="feels-like">Feels like <span id="heroApparent">--</span>°C</div>
+              <div class="condition-tag" id="heroCondition" style="margin-top: 8px;">Fetching Weather...</div>
+            </div>
+            
+            <div class="weather-icon-wrapper" id="heroIconContainer">
+              <!-- Animated Weather Icon SVG dynamically generated -->
+            </div>
+          </div>
+        </div>
+
+        <!-- Activity Suitability Module -->
+        <div class="activities-container">
+          <div class="activities-title">
+            <i data-lucide="sparkles" style="width: 14px; height: 14px; color: var(--accent-cyan);"></i>
+            Beach Suitability Radar
+          </div>
+          <div class="activity-chips">
+            <div class="activity-card">
+              <i data-lucide="person-standing" class="activity-icon"></i>
+              <span class="activity-name">Swimming</span>
+              <span class="activity-status status-safe" id="statusSwim">Safe</span>
+            </div>
+            <div class="activity-card">
+              <i data-lucide="waves" class="activity-icon"></i>
+              <span class="activity-name">Surfing</span>
+              <span class="activity-status status-caution" id="statusSurf">Fair</span>
+            </div>
+            <div class="activity-card">
+              <i data-lucide="sun" class="activity-icon"></i>
+              <span class="activity-name">Sunbathing</span>
+              <span class="activity-status status-safe" id="statusTan">Great</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Marine & Atmospheric HUD Cards -->
+      <div class="hud-metrics-grid">
+        
+        <!-- Wave Height & Period -->
+        <div class="metric-card">
+          <div class="metric-header">
+            <span class="metric-title">
+              <i data-lucide="activity" style="width: 16px; height: 16px; color: var(--accent-blue);"></i>
+              Wave Dynamics
+            </span>
+            <div class="metric-icon-badge">
+              <i data-lucide="waves" style="width: 18px; height: 18px;"></i>
+            </div>
+          </div>
+          <div class="metric-body">
+            <div class="metric-value-group">
+              <div>
+                <span class="metric-value" id="valWaveHeight">0.0</span>
+                <span class="metric-unit">m</span>
+              </div>
+              <div class="metric-subtext">Period: <strong id="valWavePeriod">0</strong>s | Swell: <strong id="valSwellHeight">0.0</strong>m</div>
+            </div>
+
+            <!-- SVG Gauge for Wave Height -->
+            <div class="gauge-wrapper">
+              <svg class="gauge-svg" viewBox="0 0 70 70">
+                <defs>
+                  <linearGradient id="cyanBlueGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" stop-color="#00e5ff" />
+                    <stop offset="100%" stop-color="#3b82f6" />
+                  </linearGradient>
+                </defs>
+                <circle class="gauge-bg" cx="35" cy="35" r="30" />
+                <circle class="gauge-fill" id="gaugeWave" cx="35" cy="35" r="30" />
+              </svg>
+              <div class="gauge-text" id="gaugeWaveText">0.0m</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- UV Solar Index -->
+        <div class="metric-card">
+          <div class="metric-header">
+            <span class="metric-title">
+              <i data-lucide="sun" style="width: 16px; height: 16px; color: var(--accent-amber);"></i>
+              UV Solar Radiation
+            </span>
+            <div class="metric-icon-badge" style="background: rgba(245, 158, 11, 0.1); color: var(--accent-amber);">
+              <i data-lucide="zap" style="width: 18px; height: 18px;"></i>
+            </div>
+          </div>
+          <div class="metric-body">
+            <div class="metric-value-group">
+              <div>
+                <span class="metric-value" id="valUv">0.0</span>
+                <span class="metric-unit">Index</span>
+              </div>
+              <div class="metric-subtext" id="uvAdvisory">Low Risk - Safe for Sun</div>
+            </div>
+
+            <!-- SVG Gauge for UV -->
+            <div class="gauge-wrapper">
+              <svg class="gauge-svg" viewBox="0 0 70 70">
+                <circle class="gauge-bg" cx="35" cy="35" r="30" />
+                <circle class="gauge-fill" id="gaugeUv" cx="35" cy="35" r="30" />
+              </svg>
+              <div class="gauge-text" id="gaugeUvText">0.0</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Wind Radar Dial -->
+        <div class="metric-card">
+          <div class="metric-header">
+            <span class="metric-title">
+              <i data-lucide="wind" style="width: 16px; height: 16px; color: var(--accent-indigo);"></i>
+              Wind Vector
+            </span>
+            <div class="metric-icon-badge" style="background: rgba(99, 102, 241, 0.1); color: var(--accent-indigo);">
+              <i data-lucide="compass" style="width: 18px; height: 18px;"></i>
+            </div>
+          </div>
+          <div class="metric-body">
+            <div class="metric-value-group">
+              <div>
+                <span class="metric-value" id="valWindSpeed">0</span>
+                <span class="metric-unit">km/h</span>
+              </div>
+              <div class="metric-subtext">Heading: <strong id="valWindDirText">N/A</strong> (<span id="valWindDegree">0</span>°)</div>
+            </div>
+
+            <!-- Compass Graphic -->
+            <div class="compass-box">
+              <div class="compass-needle" id="compassNeedle"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Atmospheric Pressure & Humidity -->
+        <div class="metric-card">
+          <div class="metric-header">
+            <span class="metric-title">
+              <i data-lucide="droplets" style="width: 16px; height: 16px; color: var(--accent-blue);"></i>
+              Atmosphere
+            </span>
+            <div class="metric-icon-badge">
+              <i data-lucide="gauge" style="width: 18px; height: 18px;"></i>
+            </div>
+          </div>
+          <div class="metric-body">
+            <div class="metric-value-group">
+              <div>
+                <span class="metric-value" id="valHumidity">0</span>
+                <span class="metric-unit">%</span>
+              </div>
+              <div class="metric-subtext">Pressure: <strong id="valPressure">1013</strong> hPa</div>
+            </div>
+            
+            <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 4px;">
+              <span style="font-size: 0.72rem; color: var(--secondary-slate); font-weight: 600;">Air Comfort</span>
+              <span style="font-size: 0.85rem; font-weight: 700; color: var(--accent-emerald);" id="valComfort">Optimal</span>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+
+    <!-- 24-Hour Forecast Slider -->
+    <div class="forecast-card">
+      <div class="section-title">
+        <i data-lucide="clock" style="width: 18px; height: 18px; color: var(--accent-blue);"></i>
+        <span id="hourlyTitle">24-Hour Beach Outlook</span>
+      </div>
+      <div class="hourly-scroll" id="hourlyContainer">
+        <!-- Dynamically rendered hourly forecast chips -->
+      </div>
+    </div>
+
+    <!-- 7-Day Extended Forecast Grid -->
+    <div class="forecast-card">
+      <div class="section-title">
+        <i data-lucide="calendar" style="width: 18px; height: 18px; color: var(--accent-blue);"></i>
+        7-Day Coastal Forecast
+      </div>
+      <div class="daily-grid" id="dailyContainer">
+        <!-- Dynamically rendered 7-day forecast cards -->
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <footer>
+      <p>© 2026 AeroBeach Busan • Pure JavaScript Meteorological Interface</p>
+      <div class="footer-links">
+        <p>Data powered by free <a href="https://open-meteo.com/" target="_blank" rel="noopener">Open-Meteo Weather & Marine APIs</a></p>
+      </div>
+    </footer>
+
+  </div>
+
+  <script>
+    /* ==========================================================================
+       1. DATA STRUCTURES & CONFIGURATION
+       ========================================================================== */
+    const BUSAN_BEACHES = [
+      { id: 'haeundae', name: 'Haeundae Beach', krName: '해운대해수욕장', lat: 35.1587, lon: 129.1604, desc: 'Busans iconic flagship beach with wide dynamic waves.' },
+      { id: 'gwangalli', name: 'Gwangalli Beach', krName: '광안리해수욕장', lat: 35.1532, lon: 129.1189, desc: 'Famous for Gwangan Bridge views and calm urban waters.' },
+      { id: 'songdo', name: 'Songdo Beach', krName: '송도해수욕장', lat: 35.0761, lon: 129.0229, desc: 'Koreas first public beach with coastal skywalks.' },
+      { id: 'dadaepo', name: 'Dadaepo Beach', krName: '다대포해수욕장', lat: 35.0469, lon: 128.9658, desc: 'Expansive mudflats, ideal for sunsets and long shallow surf.' },
+      { id: 'songjeong', name: 'Songjeong Beach', krName: '송정해수욕장', lat: 35.1786, lon: 129.2001, desc: 'The surfing capital of Busan with consistent swell.' },
+      { id: 'ilgwang', name: 'Ilgwang Beach', krName: '일광해수욕장', lat: 35.2600, lon: 129.2333, desc: 'Serene curve bay with mild waves perfect for swimming.' },
+      { id: 'imrang', name: 'Imrang Beach', krName: '임랑해수욕장', lat: 35.3186, lon: 129.2638, desc: 'Peaceful northern coastal sanctuary with crystal waters.' }
+    ];
+
+    let currentBeach = BUSAN_BEACHES[0];
+    let selectedDateString = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
+    const dataCache = new Map();
+    let mapInstance = null;
+    const mapMarkers = new Map();
+
+    /* ==========================================================================
+       2. AMBIENT CANVAS WAVE PARTICLES
+       ========================================================================== */
+    function initCanvasAnimation() {
+      const canvas = document.getElementById('ambientCanvas');
+      const ctx = canvas.getContext('2d');
+
+      let width = (canvas.width = window.innerWidth);
+      let height = (canvas.height = window.innerHeight);
+
+      window.addEventListener('resize', () => {
+        width = canvas.width = window.innerWidth;
+        height = canvas.height = window.innerHeight;
+      });
+
+      const particles = [];
+      const particleCount = 28;
+
+      for (let i = 0; i < particleCount; i++) {
+        particles.push({
+          x: Math.random() * width,
+          y: Math.random() * height,
+          radius: Math.random() * 80 + 40,
+          vx: (Math.random() - 0.5) * 0.4,
+          vy: (Math.random() - 0.5) * 0.4,
+          alpha: Math.random() * 0.25 + 0.1
+        });
+      }
+
+      function animateCanvas() {
+        ctx.clearRect(0, 0, width, height);
+
+        particles.forEach(p => {
+          p.x += p.vx;
+          p.y += p.vy;
+
+          if (p.x < -100) p.x = width + 100;
+          if (p.x > width + 100) p.x = -100;
+          if (p.y < -100) p.y = height + 100;
+          if (p.y > height + 100) p.y = -100;
+
+          const grad = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, p.radius);
+          grad.addColorStop(0, `rgba(0, 229, 255, ${p.alpha})`);
+          grad.addColorStop(0.6, `rgba(59, 130, 246, ${p.alpha * 0.4})`);
+          grad.addColorStop(1, 'rgba(255, 255, 255, 0)');
+
+          ctx.fillStyle = grad;
+          ctx.beginPath();
+          ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+          ctx.fill();
+        });
+
+        requestAnimationFrame(animateCanvas);
+      }
+
+      animateCanvas();
+    }
+
+    /* ==========================================================================
+       3. FUTURISTIC DATE SELECTOR LOGIC
+       ========================================================================== */
+    function initDatePickerRange() {
+      const dateInput = document.getElementById('datePickerInput');
+      const today = new Date();
+      const maxDate = new Date();
+      maxDate.setDate(today.getDate() + 6); // Open-Meteo 7-day forecast limit
+
+      const todayStr = today.toISOString().split('T')[0];
+      const maxStr = maxDate.toISOString().split('T')[0];
+
+      dateInput.min = todayStr;
+      dateInput.max = maxStr;
+      dateInput.value = selectedDateString;
+    }
+
+    function updateDateLabelText() {
+      const label = document.getElementById('displaySelectedDate');
+      const todayStr = new Date().toISOString().split('T')[0];
+      const tomorrow = new Date();
+      tomorrow.setDate(tomorrow.getDate() + 1);
+      const tomorrowStr = tomorrow.toISOString().split('T')[0];
+
+      if (selectedDateString === todayStr) {
+        label.textContent = 'Target Date: Today';
+      } else if (selectedDateString === tomorrowStr) {
+        label.textContent = 'Target Date: Tomorrow';
+      } else {
+        const d = new Date(selectedDateString + 'T00:00:00');
+        const formatted = d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', weekday: 'short' });
+        label.textContent = `Target Date: ${formatted}`;
+      }
+
+      const hourlyTitle = document.getElementById('hourlyTitle');
+      if (selectedDateString === todayStr) {
+        hourlyTitle.textContent = '24-Hour Beach Outlook';
+      } else {
+        const d = new Date(selectedDateString + 'T00:00:00');
+        hourlyTitle.textContent = `${d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} Hourly Outlook`;
+      }
+    }
+
+    function selectDateOffset(daysOffset) {
+      const target = new Date();
+      target.setDate(target.getDate() + daysOffset);
+      selectedDateString = target.toISOString().split('T')[0];
+
+      document.getElementById('datePickerInput').value = selectedDateString;
+      
+      // Update Preset Button Active Styles
+      document.getElementById('btnPresetToday').classList.toggle('active', daysOffset === 0);
+      document.getElementById('btnPresetTomorrow').classList.toggle('active', daysOffset === 1);
+      document.getElementById('btnPresetWeekend').classList.remove('active');
+
+      updateDateLabelText();
+      loadDashboardData();
+      populatePillAndMapTemps();
+    }
+
+    function selectWeekend() {
+      const today = new Date();
+      const dayOfWeek = today.getDay(); // 0 is Sunday, 6 is Saturday
+      let daysUntilSaturday = (6 - dayOfWeek + 7) % 7;
+      if (daysUntilSaturday === 0 && today.getHours() > 18) daysUntilSaturday = 7; // next weekend if late
+
+      const sat = new Date();
+      sat.setDate(today.getDate() + daysUntilSaturday);
+      selectedDateString = sat.toISOString().split('T')[0];
+
+      document.getElementById('datePickerInput').value = selectedDateString;
+
+      document.getElementById('btnPresetToday').classList.remove('active');
+      document.getElementById('btnPresetTomorrow').classList.remove('active');
+      document.getElementById('btnPresetWeekend').classList.add('active');
+
+      updateDateLabelText();
+      loadDashboardData();
+      populatePillAndMapTemps();
+    }
+
+    function handleDatePickerChange(val) {
+      if (!val) return;
+      selectedDateString = val;
+
+      const todayStr = new Date().toISOString().split('T')[0];
+      const tomorrow = new Date();
+      tomorrow.setDate(tomorrow.getDate() + 1);
+      const tomorrowStr = tomorrow.toISOString().split('T')[0];
+
+      document.getElementById('btnPresetToday').classList.toggle('active', selectedDateString === todayStr);
+      document.getElementById('btnPresetTomorrow').classList.toggle('active', selectedDateString === tomorrowStr);
+      document.getElementById('btnPresetWeekend').classList.remove('active');
+
+      updateDateLabelText();
+      loadDashboardData();
+      populatePillAndMapTemps();
+    }
+
+    /* ==========================================================================
+       4. INTERACTIVE BUSAN LEAFLET MAP
+       ========================================================================== */
+    function initBusanMap() {
+      mapInstance = L.map('busanMap', {
+        center: [35.15, 129.12],
+        zoom: 11,
+        zoomControl: true,
+        scrollWheelZoom: false
+      });
+
+      L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/">CARTO</a>',
+        subdomains: 'abcd',
+        maxZoom: 18
+      }).addTo(mapInstance);
+
+      BUSAN_BEACHES.forEach(beach => {
+        const customIcon = L.divIcon({
+          className: 'custom-pin-wrapper',
+          html: `
+            <div class="custom-beach-pin" id="map-pin-${beach.id}" onclick="selectBeach('${beach.id}')">
+              <span class="pin-name">${beach.name.split(' ')[0]}</span>
+              <span class="pin-temp" id="map-pin-temp-${beach.id}">--°</span>
+            </div>
+          `,
+          iconSize: [110, 36],
+          iconAnchor: [55, 36]
+        });
+
+        const marker = L.marker([beach.lat, beach.lon], { icon: customIcon }).addTo(mapInstance);
+
+        marker.bindPopup(`
+          <div class="map-popup-card">
+            <div class="popup-beach-name">${beach.name}</div>
+            <span class="popup-kr">${beach.krName}</span>
+            <p style="font-size: 0.72rem; color: var(--secondary-slate); line-height: 1.3;">${beach.desc}</p>
+            <div class="popup-weather-row">
+              <span class="popup-temp" id="pop-temp-${beach.id}">--°C</span>
+              <div class="popup-metrics">
+                <span>Wave: <strong id="pop-wave-${beach.id}">--m</strong></span>
+                <span>Wind: <strong id="pop-wind-${beach.id}">-- km/h</strong></span>
+              </div>
+            </div>
+            <button class="popup-action-btn" onclick="selectBeach('${beach.id}')">Load Detailed Intelligence</button>
+          </div>
+        `, { maxWidth: 220 });
+
+        marker.on('click', () => {
+          selectBeach(beach.id);
+        });
+
+        mapMarkers.set(beach.id, marker);
+      });
+    }
+
+    function updateMapHighlight(beachId) {
+      if (!mapInstance) return;
+
+      const target = BUSAN_BEACHES.find(b => b.id === beachId);
+      if (target) {
+        mapInstance.flyTo([target.lat, target.lon], 13, { duration: 1.2 });
+
+        document.querySelectorAll('.custom-beach-pin').forEach(pin => pin.classList.remove('active'));
+        const activePin = document.getElementById(`map-pin-${beachId}`);
+        if (activePin) activePin.classList.add('active');
+
+        const marker = mapMarkers.get(beachId);
+        if (marker) {
+          setTimeout(() => marker.openPopup(), 400);
+        }
+      }
+    }
+
+    /* ==========================================================================
+       5. API FETCHING & CACHING LAYER
+       ========================================================================== */
+    async function fetchOpenMeteoData(lat, lon) {
+      const cacheKey = `${lat.toFixed(4)}_${lon.toFixed(4)}`;
+      const now = Date.now();
+
+      if (dataCache.has(cacheKey)) {
+        const cached = dataCache.get(cacheKey);
+        if (now - cached.timestamp < 10 * 60 * 1000) {
+          return cached.data;
+        }
+      }
+
+      const weatherUrl = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,relative_humidity_2m,apparent_temperature,weather_code,surface_pressure,wind_speed_10m,wind_direction_10m&hourly=temperature_2m,weather_code,uv_index,precipitation_probability,wind_speed_10m,relative_humidity_2m,surface_pressure,apparent_temperature,wind_direction_10m&daily=weather_code,temperature_2m_max,temperature_2m_min,uv_index_max,precipitation_probability_max&timezone=Asia%2FTokyo`;
+      const marineUrl = `https://marine-api.open-meteo.com/v1/marine?latitude=${lat}&longitude=${lon}&current=wave_height,wave_direction,wave_period,swell_wave_height&hourly=wave_height,wave_period,swell_wave_height&daily=wave_height_max&timezone=Asia%2FTokyo`;
+
+      const [weatherRes, marineRes] = await Promise.all([
+        fetchWithRetry(weatherUrl),
+        fetchWithRetry(marineUrl)
+      ]);
+
+      const weatherData = await weatherRes.json();
+      const marineData = await marineRes.json();
+
+      const combined = { weather: weatherData, marine: marineData };
+      dataCache.set(cacheKey, { timestamp: now, data: combined });
+
+      return combined;
+    }
+
+    async function fetchWithRetry(url, retries = 3, delay = 1000) {
+      for (let i = 0; i < retries; i++) {
+        try {
+          const res = await fetch(url);
+          if (res.ok) return res;
+        } catch (err) {
+          if (i === retries - 1) throw err;
+        }
+        await new Promise(r => setTimeout(r, delay * Math.pow(2, i)));
+      }
+      throw new Error('API request failed after retries');
+    }
+
+    /* Helper: Extract target date metrics from hourly forecast arrays */
+    function getTargetDateMetrics(hourlyWeather, hourlyMarine, targetDateStr) {
+      const times = hourlyWeather.time;
+      let targetIndices = [];
+
+      for (let i = 0; i < times.length; i++) {
+        if (times[i].startsWith(targetDateStr)) {
+          targetIndices.push(i);
+        }
+      }
+
+      // Default fallback to index 0 if not found
+      if (targetIndices.length === 0) targetIndices = [0];
+
+      // Use mid-day (12:00 PM) index for daily representation if available
+      const midIdx = targetIndices[Math.floor(targetIndices.length / 2)];
+
+      return {
+        temp: Math.round(hourlyWeather.temperature_2m[midIdx]),
+        apparent: Math.round(hourlyWeather.apparent_temperature ? hourlyWeather.apparent_temperature[midIdx] : hourlyWeather.temperature_2m[midIdx]),
+        humidity: hourlyWeather.relative_humidity_2m ? hourlyWeather.relative_humidity_2m[midIdx] : 65,
+        pressure: hourlyWeather.surface_pressure ? hourlyWeather.surface_pressure[midIdx] : 1013,
+        windSpeed: Math.round(hourlyWeather.wind_speed_10m[midIdx]),
+        windDir: hourlyWeather.wind_direction_10m ? hourlyWeather.wind_direction_10m[midIdx] : 180,
+        weatherCode: hourlyWeather.weather_code[midIdx],
+        waveHeight: hourlyMarine?.wave_height ? (hourlyMarine.wave_height[midIdx] ?? 0.6) : 0.6,
+        wavePeriod: hourlyMarine?.wave_period ? (hourlyMarine.wave_period[midIdx] ?? 5.2) : 5.2,
+        swellHeight: hourlyMarine?.swell_wave_height ? (hourlyMarine.swell_wave_height[midIdx] ?? 0.4) : 0.4,
+        uvIndex: hourlyWeather.uv_index ? hourlyWeather.uv_index[midIdx] : 4.5,
+        targetIndices: targetIndices
+      };
+    }
+
+    /* ==========================================================================
+       6. WEATHER CODE INTERPRETATION & ANIMATED SVG ICONS
+       ========================================================================== */
+    function getWeatherMeta(code) {
+      if (code === 0) return { text: 'Clear Sky', icon: 'sun' };
+      if (code >= 1 && code <= 3) return { text: 'Partly Cloudy', icon: 'cloud-sun' };
+      if (code >= 45 && code <= 48) return { text: 'Foggy Coast', icon: 'cloud-fog' };
+      if (code >= 51 && code <= 67) return { text: 'Light Rain', icon: 'cloud-drizzle' };
+      if (code >= 71 && code <= 77) return { text: 'Flurries', icon: 'snowflake' };
+      if (code >= 80 && code <= 82) return { text: 'Rain Showers', icon: 'cloud-rain' };
+      if (code >= 95) return { text: 'Coastal Thunderstorm', icon: 'cloud-lightning' };
+      return { text: 'Overcast', icon: 'cloud' };
+    }
+
+    function renderDynamicIcon(iconType) {
+      if (iconType === 'sun') {
+        return `
+          <svg class="weather-icon-svg" viewBox="0 0 64 64" fill="none">
+            <circle cx="32" cy="32" r="14" fill="url(#sunGrad)" />
+            <g stroke="#f59e0b" stroke-width="3" stroke-linecap="round">
+              <line x1="32" y1="6" x2="32" y2="12" />
+              <line x1="32" y1="52" x2="32" y2="58" />
+              <line x1="6" y1="32" x2="12" y2="32" />
+              <line x1="52" y1="32" x2="58" y2="32" />
+              <line x1="13.6" y1="13.6" x2="17.8" y2="17.8" />
+              <line x1="46.2" y1="46.2" x2="50.4" y2="50.4" />
+              <line x1="13.6" y1="50.4" x2="17.8" y2="46.2" />
+              <line x1="46.2" y1="17.8" x2="50.4" y2="13.6" />
+            </g>
+            <defs>
+              <linearGradient id="sunGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#fbbf24" />
+                <stop offset="100%" stop-color="#f59e0b" />
+              </linearGradient>
+            </defs>
+          </svg>
+        `;
+      } else if (iconType === 'cloud-rain' || iconType === 'cloud-drizzle') {
+        return `
+          <svg class="weather-icon-svg" viewBox="0 0 64 64" fill="none">
+            <path d="M20 40C14.4772 40 10 35.5228 10 30C10 24.8 13.9 20.5 19 19.9C20.6 13.7 26.2 9 33 9C41.2843 9 48 15.7157 48 24C52.4183 24 56 27.5817 56 32C56 36.4183 52.4183 40 48 40H20Z" fill="url(#cloudGrad)" />
+            <g stroke="#00e5ff" stroke-width="3" stroke-linecap="round">
+              <line x1="22" y1="46" x2="18" y2="56" />
+              <line x1="34" y1="46" x2="30" y2="56" />
+              <line x1="46" y1="46" x2="42" y2="56" />
+            </g>
+            <defs>
+              <linearGradient id="cloudGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#93c5fd" />
+                <stop offset="100%" stop-color="#3b82f6" />
+              </linearGradient>
+            </defs>
+          </svg>
+        `;
+      } else {
+        return `
+          <svg class="weather-icon-svg" viewBox="0 0 64 64" fill="none">
+            <circle cx="24" cy="22" r="10" fill="#f59e0b" />
+            <path d="M22 44C17.0294 44 13 39.9706 13 35C13 30.3 16.51 26.43 21.1 25.91C22.54 20.33 27.58 16 33.7 16 C41.1558 16 47.2 22.0442 47.2 29.5C51.1765 29.5 54.4 32.7235 54.4 36.7C54.4 40.6765 51.1765 43.9 47.2 43.9H22Z" fill="url(#cloudSunGrad)" />
+            <defs>
+              <linearGradient id="cloudSunGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#ffffff" />
+                <stop offset="100%" stop-color="#cbd5e1" />
+              </linearGradient>
+            </defs>
+          </svg>
+        `;
+      }
+    }
+
+    /* ==========================================================================
+       7. SUITABILITY RADAR CALCULATIONS
+       ========================================================================== */
+    function calculateSuitability(waveHeight, windSpeed, uvIndex, weatherCode) {
+      let swim = { text: 'Safe', class: 'status-safe' };
+      if (waveHeight > 1.8 || windSpeed > 38) {
+        swim = { text: 'Danger', class: 'status-danger' };
+      } else if (waveHeight > 1.0 || windSpeed > 22) {
+        swim = { text: 'Caution', class: 'status-caution' };
+      }
+
+      let surf = { text: 'Fair', class: 'status-caution' };
+      if (waveHeight >= 1.2 && waveHeight <= 2.5) {
+        surf = { text: 'Optimal', class: 'status-safe' };
+      } else if (waveHeight < 0.5) {
+        surf = { text: 'Flat', class: 'status-caution' };
+      } else if (waveHeight > 2.5) {
+        surf = { text: 'Heavy', class: 'status-danger' };
+      }
+
+      let tan = { text: 'Great', class: 'status-safe' };
+      if (weatherCode >= 50 || uvIndex < 2) {
+        tan = { text: 'Low UV', class: 'status-caution' };
+      } else if (uvIndex >= 8) {
+        tan = { text: 'Extreme UV', class: 'status-danger' };
+      }
+
+      return { swim, surf, tan };
+    }
+
+    /* ==========================================================================
+       8. UI RENDER ENGINE
+       ========================================================================== */
+    function renderBeachPills() {
+      const container = document.getElementById('beachPills');
+      container.innerHTML = BUSAN_BEACHES.map(b => `
+        <div class="beach-pill ${b.id === currentBeach.id ? 'active' : ''}" onclick="selectBeach('${b.id}')">
+          <div class="pill-info">
+            <span class="pill-name">${b.name}</span>
+            <span class="pill-kr">${b.krName}</span>
+          </div>
+          <div class="pill-temp" id="pill-temp-${b.id}">--°</div>
+        </div>
+      `).join('');
+    }
+
+    async function loadDashboardData() {
+      const loader = document.getElementById('heroLoader');
+      loader.classList.add('active');
+
+      try {
+        const { weather, marine } = await fetchOpenMeteoData(currentBeach.lat, currentBeach.lon);
+        const data = getTargetDateMetrics(weather.hourly, marine.hourly, selectedDateString);
+
+        const meta = getWeatherMeta(data.weatherCode);
+
+        // Update Hero Panel
+        document.getElementById('heroName').textContent = currentBeach.name;
+        document.getElementById('heroKrName').textContent = currentBeach.krName;
+        document.getElementById('heroCoords').textContent = `${currentBeach.lat.toFixed(4)}° N, ${currentBeach.lon.toFixed(4)}° E`;
+        document.getElementById('heroTemp').textContent = `${data.temp}°`;
+        document.getElementById('heroApparent').textContent = data.apparent;
+        document.getElementById('heroCondition').textContent = meta.text;
+        document.getElementById('heroIconContainer').innerHTML = renderDynamicIcon(meta.icon);
+
+        // Update Mini Pill Temp
+        const activePillTemp = document.getElementById(`pill-temp-${currentBeach.id}`);
+        if (activePillTemp) activePillTemp.textContent = `${data.temp}°`;
+
+        // Update Map Pin & Popup text
+        const mapPinTemp = document.getElementById(`map-pin-temp-${currentBeach.id}`);
+        if (mapPinTemp) mapPinTemp.textContent = `${data.temp}°`;
+
+        const popTemp = document.getElementById(`pop-temp-${currentBeach.id}`);
+        if (popTemp) popTemp.textContent = `${data.temp}°C`;
+
+        const popWave = document.getElementById(`pop-wave-${currentBeach.id}`);
+        if (popWave) popWave.textContent = `${data.waveHeight.toFixed(1)}m`;
+
+        const popWind = document.getElementById(`pop-wind-${currentBeach.id}`);
+        if (popWind) popWind.textContent = `${data.windSpeed} km/h`;
+
+        // Update Suitability
+        const suitability = calculateSuitability(data.waveHeight, data.windSpeed, data.uvIndex, data.weatherCode);
+        const swimEl = document.getElementById('statusSwim');
+        swimEl.textContent = suitability.swim.text;
+        swimEl.className = `activity-status ${suitability.swim.class}`;
+
+        const surfEl = document.getElementById('statusSurf');
+        surfEl.textContent = suitability.surf.text;
+        surfEl.className = `activity-status ${suitability.surf.class}`;
+
+        const tanEl = document.getElementById('statusTan');
+        tanEl.textContent = suitability.tan.text;
+        tanEl.className = `activity-status ${suitability.tan.class}`;
+
+        // Update HUD Metrics
+        document.getElementById('valWaveHeight').textContent = data.waveHeight.toFixed(1);
+        document.getElementById('valWavePeriod').textContent = Math.round(data.wavePeriod);
+        document.getElementById('valSwellHeight').textContent = data.swellHeight.toFixed(1);
+
+        const waveOffset = 188.4 - (Math.min(data.waveHeight, 3.0) / 3.0) * 188.4;
+        document.getElementById('gaugeWave').style.strokeDashoffset = waveOffset;
+        document.getElementById('gaugeWaveText').textContent = `${data.waveHeight.toFixed(1)}m`;
+
+        document.getElementById('valUv').textContent = data.uvIndex.toFixed(1);
+        const uvOffset = 188.4 - (Math.min(data.uvIndex, 11) / 11) * 188.4;
+        document.getElementById('gaugeUv').style.strokeDashoffset = uvOffset;
+        document.getElementById('gaugeUvText').textContent = data.uvIndex.toFixed(1);
+
+        let uvAdvisoryText = 'Low Risk - Sun Safe';
+        if (data.uvIndex >= 8) uvAdvisoryText = 'Extreme Risk - Seek Shade';
+        else if (data.uvIndex >= 6) uvAdvisoryText = 'High Risk - Apply SPF 50+';
+        else if (data.uvIndex >= 3) uvAdvisoryText = 'Moderate Risk - Wear Hat';
+        document.getElementById('uvAdvisory').textContent = uvAdvisoryText;
+
+        document.getElementById('valWindSpeed').textContent = data.windSpeed;
+        document.getElementById('valWindDegree').textContent = data.windDir;
+        document.getElementById('valWindDirText').textContent = getCardinalDirection(data.windDir);
+        document.getElementById('compassNeedle').style.transform = `rotate(${data.windDir}deg)`;
+
+        document.getElementById('valHumidity').textContent = data.humidity;
+        document.getElementById('valPressure').textContent = Math.round(data.pressure);
+        document.getElementById('valComfort').textContent = data.humidity > 75 ? 'Humid Air' : 'Crisp & Clear';
+
+        renderHourlyForecast(weather.hourly, marine.hourly, data.targetIndices);
+        renderDailyForecast(weather.daily, marine.daily);
+
+      } catch (err) {
+        console.error('Data loading error:', err);
+      } finally {
+        loader.classList.remove('active');
+      }
+    }
+
+    function renderHourlyForecast(hourlyWeather, hourlyMarine, indices) {
+      const container = document.getElementById('hourlyContainer');
+
+      container.innerHTML = indices.map(idx => {
+        const timeStr = hourlyWeather.time[idx];
+        const date = new Date(timeStr);
+        const hourFormatted = date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true });
+        const temp = Math.round(hourlyWeather.temperature_2m[idx]);
+        const code = hourlyWeather.weather_code[idx];
+        const meta = getWeatherMeta(code);
+        const wave = hourlyMarine?.wave_height ? hourlyMarine.wave_height[idx] : 0.5;
+
+        return `
+          <div class="hourly-item">
+            <span class="hourly-time">${hourFormatted}</span>
+            <div class="hourly-icon">${renderDynamicIcon(meta.icon)}</div>
+            <span class="hourly-temp">${temp}°</span>
+            <span class="hourly-wave">
+              <i data-lucide="waves" style="width: 12px; height: 12px;"></i>
+              ${wave ? wave.toFixed(1) : 0.5}m
+            </span>
+          </div>
+        `;
+      }).join('');
+
+      lucide.createIcons();
+    }
+
+    function renderDailyForecast(dailyWeather, dailyMarine) {
+      const container = document.getElementById('dailyContainer');
+      const days = dailyWeather.time;
+
+      container.innerHTML = days.map((dateStr, idx) => {
+        const date = new Date(dateStr);
+        const dayName = date.toLocaleDateString('en-US', { weekday: 'short' });
+        const dateFormatted = `${date.getMonth() + 1}/${date.getDate()}`;
+        const maxTemp = Math.round(dailyWeather.temperature_2m_max[idx]);
+        const minTemp = Math.round(dailyWeather.temperature_2m_min[idx]);
+        const code = dailyWeather.weather_code[idx];
+        const meta = getWeatherMeta(code);
+        const maxWave = dailyMarine?.wave_height_max ? dailyMarine.wave_height_max[idx] : 0.6;
+        const isSelected = dateStr === selectedDateString;
+
+        return `
+          <div class="daily-item ${isSelected ? 'active-day' : ''}" onclick="handleDatePickerChange('${dateStr}')">
+            <span class="daily-day">${idx === 0 ? 'Today' : dayName}</span>
+            <span class="daily-date">${dateFormatted}</span>
+            <div style="width: 32px; height: 32px; margin: 4px 0;">
+              ${renderDynamicIcon(meta.icon)}
+            </div>
+            <div class="daily-temps">
+              <span class="temp-high">${maxTemp}°</span>
+              <span class="temp-low">${minTemp}°</span>
+            </div>
+            <span class="daily-wave-badge">Wave ${maxWave ? maxWave.toFixed(1) : 0.6}m</span>
+          </div>
+        `;
+      }).join('');
+
+      lucide.createIcons();
+    }
+
+    /* ==========================================================================
+       9. HELPER UTILITIES & GEOLOCATION
+       ========================================================================== */
+    function getCardinalDirection(angle) {
+      const directions = ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW'];
+      return directions[Math.round(angle / 45) % 8];
+    }
+
+    function selectBeach(beachId) {
+      const found = BUSAN_BEACHES.find(b => b.id === beachId);
+      if (found) {
+        currentBeach = found;
+        renderBeachPills();
+        loadDashboardData();
+        updateMapHighlight(beachId);
+      }
+    }
+
+    function findNearestBeach(userLat, userLon) {
+      let nearest = BUSAN_BEACHES[0];
+      let minDistance = Infinity;
+
+      BUSAN_BEACHES.forEach(beach => {
+        const R = 6371;
+        const dLat = (beach.lat - userLat) * Math.PI / 180;
+        const dLon = (beach.lon - userLon) * Math.PI / 180;
+        const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+                  Math.cos(userLat * Math.PI / 180) * Math.cos(beach.lat * Math.PI / 180) *
+                  Math.sin(dLon/2) * Math.sin(dLon/2);
+        const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+        const distance = R * c;
+
+        if (distance < minDistance) {
+          minDistance = distance;
+          nearest = beach;
+        }
+      });
+
+      return nearest;
+    }
+
+    function setupGeolocation() {
+      const geoBtn = document.getElementById('geoBtn');
+      geoBtn.addEventListener('click', () => {
+        if (!navigator.geolocation) {
+          alert('Geolocation is not supported by your browser.');
+          return;
+        }
+
+        geoBtn.style.opacity = '0.7';
+        navigator.geolocation.getCurrentPosition(
+          (position) => {
+            geoBtn.style.opacity = '1';
+            const nearest = findNearestBeach(position.coords.latitude, position.coords.longitude);
+            selectBeach(nearest.id);
+          },
+          (error) => {
+            geoBtn.style.opacity = '1';
+            console.warn('Geolocation failed or denied, using Haeundae as default.');
+            selectBeach('haeundae');
+          }
+        );
+      });
+    }
+
+    async function populatePillAndMapTemps() {
+      for (const beach of BUSAN_BEACHES) {
+        try {
+          const { weather, marine } = await fetchOpenMeteoData(beach.lat, beach.lon);
+          const data = getTargetDateMetrics(weather.hourly, marine.hourly, selectedDateString);
+
+          const tempVal = `${data.temp}°`;
+          const waveVal = `${data.waveHeight.toFixed(1)}m`;
+          const windVal = `${data.windSpeed} km/h`;
+
+          const pillEl = document.getElementById(`pill-temp-${beach.id}`);
+          if (pillEl) pillEl.textContent = tempVal;
+
+          const mapPinEl = document.getElementById(`map-pin-temp-${beach.id}`);
+          if (mapPinEl) mapPinEl.textContent = tempVal;
+
+          const popTemp = document.getElementById(`pop-temp-${beach.id}`);
+          if (popTemp) popTemp.textContent = `${tempVal}C`;
+
+          const popWave = document.getElementById(`pop-wave-${beach.id}`);
+          if (popWave) popWave.textContent = waveVal;
+
+          const popWind = document.getElementById(`pop-wind-${beach.id}`);
+          if (popWind) popWind.textContent = windVal;
+        } catch (e) {
+          // Silent fallback
+        }
+      }
+    }
+
+    /* ==========================================================================
+       10. INITIALIZATION ON DOM READY
+       ========================================================================== */
+    window.addEventListener('DOMContentLoaded', () => {
+      initCanvasAnimation();
+      initDatePickerRange();
+      renderBeachPills();
+      initBusanMap();
+      loadDashboardData();
+      populatePillAndMapTemps();
+      setupGeolocation();
+      lucide.createIcons();
+    });
+  </script>
+</body>
+</html>
